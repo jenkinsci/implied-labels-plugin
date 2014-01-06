@@ -31,12 +31,16 @@ import hudson.util.FormValidation;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import jenkins.model.Jenkins;
 
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,21 +65,37 @@ public class ConfigTest {
     }
 
     @Test public void roundtrip() {
-        assertThat(config.implications(), equalTo(implications));
+        assertThat(config.implications(), sameMembers(implications));
 
-        assertThat(new Config().implications(), equalTo(implications));
+        assertThat(new Config().implications(), sameMembers(implications));
     }
 
     @Test public void evaluate() throws IOException {
         Jenkins jenkins = Jenkins.getInstance();
         jenkins.setLabelString("rhel65");
+
         config.evaluate(jenkins);
 
         HashSet<Label> expected = new HashSet<Label>(Arrays.asList(
                 label("rhel65"), label("rhel6"), label("rhel"), label("linux"), label("master")
         ));
 
-        assertThat(jenkins.getLabels(), equalTo((Set<Label>) expected));
+        assertThat(jenkins.getLabels(), sameMembers(expected));
+    }
+
+    @Test public void evaluateInAnyOrder() throws IOException {
+        Jenkins jenkins = Jenkins.getInstance();
+        jenkins.setLabelString("rhel65");
+
+        Collections.reverse(implications);
+        config.implications(implications);
+        config.evaluate(jenkins);
+
+        HashSet<Label> expected = new HashSet<Label>(Arrays.asList(
+                label("rhel65"), label("rhel6"), label("rhel"), label("linux"), label("master")
+        ));
+
+        assertThat(jenkins.getLabels(), sameMembers(expected));
     }
 
     private Label label(String label) {
@@ -88,5 +108,27 @@ public class ConfigTest {
         assertThat(config.doCheckExpression("!master"), equalTo(FormValidation.ok()));
 
         assertThat(config.doCheckExpression("!||&&").getMessage(), containsString("Invalid boolean expression"));
+    }
+
+    private <T> TypeSafeMatcher<Collection<T>> sameMembers(Collection<T> impl) {
+        return new SameMembers<T>(impl);
+    }
+
+    private static class SameMembers<T> extends TypeSafeMatcher<Collection<T>> {
+
+        private final Set<T> impl;
+
+        public SameMembers(Collection<T> impl) {
+            this.impl = new HashSet<T>(impl);
+        }
+
+        public void describeTo(Description description) {
+            description.appendText("Implies: " + impl);
+        }
+
+        @Override
+        protected boolean matchesSafely(Collection<T> item) {
+            return impl.equals(new HashSet<T>(item));
+        }
     }
 }

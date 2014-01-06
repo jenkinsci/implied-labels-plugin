@@ -26,9 +26,13 @@ package org.jenkinsci.plugins.impliedlabels;
 import hudson.Util;
 import hudson.model.Label;
 import hudson.model.labels.LabelAtom;
+import hudson.util.CyclicGraphDetector;
+import hudson.util.CyclicGraphDetector.CycleDetectedException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -92,5 +96,29 @@ public class Implication {
         Implication other = (Implication) rhs;
 
         return atoms.equals(other.atoms) && expression().equals(other.expression());
+    }
+
+    /*package*/ static @Nonnull List<Implication> sort(final @Nonnull Collection<Implication> implications) throws CycleDetectedException {
+        CyclicGraphDetector<Implication> sorter = new CyclicGraphDetector<Implication>() {
+            @Override
+            protected Iterable<Implication> getEdges(Implication current) {
+                List<Implication> edges = new ArrayList<Implication>();
+                if (current.expression == null) return edges;
+
+                for (Implication i: implications) {
+                    if (i == current) continue;
+                    if (i.expression == null) continue;
+
+                    if (Collections.disjoint(current.expression.listAtoms(), i.atoms)) continue;
+
+                    edges.add(i);
+                }
+
+                return edges;
+            }
+        };
+
+        sorter.run(implications);
+        return sorter.getSorted();
     }
 }

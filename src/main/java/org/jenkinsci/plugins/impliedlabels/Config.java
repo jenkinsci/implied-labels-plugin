@@ -30,6 +30,7 @@ import hudson.model.Messages;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
+import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.FormValidation;
 
 import java.io.File;
@@ -55,7 +56,10 @@ import antlr.ANTLRException;
 @Restricted(NoExternalUse.class)
 public class Config extends ManagementLink {
 
-    private List<Implication> implications = Collections.emptyList();
+    /**
+     * Topologically sorted implications.
+     */
+    private @Nonnull List<Implication> implications = Collections.emptyList();
 
     public Config() {
         try {
@@ -80,20 +84,28 @@ public class Config extends ManagementLink {
         return "label-implications";
     }
 
-    public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        implications = req.bindJSONToList(
+    public void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        this.implications(req.bindJSONToList(
                 Implication.class, req.getSubmittedForm().get("impl")
-        );
-        save();
+        ));
         rsp.sendRedirect2(".");
     }
 
-    /*package*/ synchronized void implications(List<Implication> implications) throws IOException {
-        this.implications = Collections.unmodifiableList(implications);
-        save();
+    /*package*/ void implications(@Nonnull Collection<Implication> implications) throws IOException {
+        List<Implication> im;
+        try {
+            im = Implication.sort(implications);
+        } catch (CycleDetectedException ex) {
+            throw new IOException("Implication cycle detected", ex);
+        }
+
+        synchronized (this.implications) {
+            this.implications = im;
+            save();
+        }
     }
 
-    public List<Implication> implications() {
+    public @Nonnull List<Implication> implications() {
         return Collections.unmodifiableList(this.implications);
     }
 
