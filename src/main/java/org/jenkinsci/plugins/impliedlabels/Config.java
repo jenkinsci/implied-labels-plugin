@@ -50,6 +50,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import antlr.ANTLRException;
 
@@ -75,6 +76,11 @@ public class Config extends ManagementLink {
     }
 
     @Override
+    public String getDescription() {
+        return "Infer redundant labels automatically based on user declaration";
+    }
+
+    @Override
     public String getIconFileName() {
         return "/plugin/implied-labels/icons/48x48/attribute.png";
     }
@@ -84,11 +90,12 @@ public class Config extends ManagementLink {
         return "label-implications";
     }
 
-    public void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    @RequirePOST
+    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         this.implications(req.bindJSONToList(
                 Implication.class, req.getSubmittedForm().get("impl")
         ));
-        rsp.sendRedirect2(".");
+        rsp.sendRedirect2(Jenkins.getInstance().getRootUrl() + getUrlName());
     }
 
     /*package*/ void implications(@Nonnull Collection<Implication> implications) throws IOException {

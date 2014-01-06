@@ -42,7 +42,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import antlr.ANTLRException;
 
-public class Implication {
+/*package*/ class Implication {
 
     private static final @Nonnull Set<LabelAtom> NO_ATOMS = Collections.emptySet();
     private final @Nonnull Set<LabelAtom> atoms;
@@ -62,12 +62,25 @@ public class Implication {
         this.expression = e;
     }
 
-    public String expression() {
+    public String expressionString() {
         return expression == null ? "" : expression.toString();
     }
 
-    public String atoms() {
+    public String atomsString() {
         return Util.join(atoms, " ");
+    }
+
+    public Label expression() {
+        return expression;
+    }
+
+    public Set<LabelAtom> atoms() {
+        return atoms;
+    }
+
+    public int labelSize() {
+        if (expression == null) return 0;
+        return expression.getNodes().size() + expression.getClouds().size();
     }
 
     public @Nonnull Collection<LabelAtom> infer(@Nonnull Collection<LabelAtom> atoms) {
@@ -79,12 +92,12 @@ public class Implication {
 
     @Override
     public String toString() {
-        return (expression == null ? "false" : expression) + " => " + atoms();
+        return (expression == null ? "false" : expression) + " => " + atomsString();
     }
 
     @Override
     public int hashCode() {
-        return 31 * atoms.hashCode() + expression().hashCode();
+        return 31 * atoms.hashCode() + expressionString().hashCode();
     }
 
     @Override
@@ -95,7 +108,11 @@ public class Implication {
 
         Implication other = (Implication) rhs;
 
-        return atoms.equals(other.atoms) && expression().equals(other.expression());
+        if (!atoms.equals(other.atoms)) return false;
+        return expression == null
+                ? other.expression == null
+                : expression.equals(other.expression)
+        ;
     }
 
     /*package*/ static @Nonnull List<Implication> sort(final @Nonnull Collection<Implication> implications) throws CycleDetectedException {

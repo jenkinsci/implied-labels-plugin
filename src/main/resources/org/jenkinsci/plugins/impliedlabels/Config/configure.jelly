@@ -24,12 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${it.displayName}">
-    <l:header />
+  <l:layout permission="${app.ADMINISTER}" title="${it.displayName}">
     <l:side-panel>
       <l:tasks>
-        <l:task icon="images/24x24/up.png" href="${rootURL}/manage" title="${%Manage Jenkins}" permission="${app.ADMINISTER}" />
-        <l:task icon="images/24x24/setting.png" href="configure" title="${%Configure}" permission="${app.ADMINISTER}" />
+        <l:task icon="images/24x24/up.png" href="${rootURL}/manage" title="${it.displayName}" permission="${app.ADMINISTER}" />
       </l:tasks>
       <t:executors computers="${h.singletonList(it)}" />
     </l:side-panel>
@@ -37,24 +35,26 @@ THE SOFTWARE.
     <l:main-panel>
       <h1>${it.displayName}</h1>
 
-      <table class="pane sortable bigtable">
-        <tr>
-          <th>Infered labels</th>
-          <th>Expression</th>
-          <th>Size</th>
-        </tr>
-        <j:forEach var="implication" items="${it.implications()}">
-          <tr>
-            <td>
-              <j:forEach var="atom" items="${implication.atoms()}">
-                <a href="${rootURL}/${atom.url}">${atom}</a><st:nbsp/>
-              </j:forEach>
-            </td>
-            <td><a href="${rootURL}/${implication.expression().url}">${implication.expressionString()}</a></td>
-            <td>${implication.labelSize()}</td>
-          </tr>
-        </j:forEach>
-      </table>
+      <f:form method="post" action="configSubmit">
+        <f:entry>
+          <f:repeatable var="impl" items="${it.implications()}" add="${%New Implication}">
+            <table width="100%" class="bigtable">
+              <f:entry>
+                <label>${%Labels}<f:textbox value="${impl.atomsString()}" field="atoms" style="width: 30%"/></label>
+                <st:nbsp/>
+                <labels>${%Expression}<f:textbox value="${impl.expressionString()}" field="expression" style="width: 50%" checkUrl="'${rootURL}/label-implications/checkExpression?expression='+encodeURIComponent(this.value)"/></labels>
+                <st:nbsp/>
+                <f:repeatableDeleteButton />
+              </f:entry>
+            </table>
+          </f:repeatable>
+        </f:entry>
+
+        <f:block>
+          <f:submit value="${%Save}"/>
+          <f:apply/>
+        </f:block>
+      </f:form>
     </l:main-panel>
   </l:layout>
 </j:jelly>

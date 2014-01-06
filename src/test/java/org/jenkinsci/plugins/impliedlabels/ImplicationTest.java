@@ -43,8 +43,8 @@ public class ImplicationTest {
     public void valid() {
         Implication i = new Implication("a||b", "c d");
 
-        assertThat("c d", equalTo(i.atoms()));
-        assertThat("a||b", equalTo(i.expression()));
+        assertThat("c d", equalTo(i.atomsString()));
+        assertThat("a||b", equalTo(i.expressionString()));
         assertThat("a||b => c d", equalTo(i.toString()));
     }
 
@@ -54,8 +54,8 @@ public class ImplicationTest {
 
         Set<LabelAtom> empty = Collections.<LabelAtom>emptySet();
 
-        assertThat("c d", equalTo(i.atoms()));
-        assertThat("", equalTo(i.expression()));
+        assertThat("c d", equalTo(i.atomsString()));
+        assertThat("", equalTo(i.expressionString()));
         assertThat("false => c d", equalTo(i.toString()));
         assertThat(i.infer(empty), equalTo((Collection<LabelAtom>) empty));
     }
