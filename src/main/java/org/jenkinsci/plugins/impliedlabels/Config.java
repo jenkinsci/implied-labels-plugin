@@ -145,7 +145,7 @@ public class Config extends ManagementLink {
 
     // see AbstractProject#doCheckAssignedLabelString
     public FormValidation doCheckExpression(@QueryParameter String expression) {
-        if (Util.fixEmpty(expression)==null) return FormValidation.ok();
+        if (Util.fixEmpty(expression) == null) return FormValidation.ok();
 
         try {
 

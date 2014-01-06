@@ -38,11 +38,14 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import antlr.ANTLRException;
 
-/*package*/ class Implication {
+@Restricted(NoExternalUse.class)
+public class Implication {
 
     private static final @Nonnull Set<LabelAtom> NO_ATOMS = Collections.emptySet();
     private final @Nonnull Set<LabelAtom> atoms;

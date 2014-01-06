@@ -59,7 +59,8 @@ public class ConfigTest {
                 new Implication("rhel64 || rhel65", "rhel6"),
                 new Implication("rhel4 || rhel5 || rhel6", "rhel"),
                 new Implication("fedora17 || fedora18", "fedora"),
-                new Implication("rhel || fedora", "linux")
+                new Implication("rhel || fedora", "linux"),
+                new Implication("||", "invalid")
         );
         config.implications(implications);
     }

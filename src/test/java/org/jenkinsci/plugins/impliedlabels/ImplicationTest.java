@@ -27,9 +27,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import hudson.model.labels.LabelAtom;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+
+import jenkins.model.Jenkins;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,12 +43,14 @@ public class ImplicationTest {
     @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void valid() {
+    public void valid() throws IOException {
+        Jenkins.getInstance().setLabelString("a");
         Implication i = new Implication("a||b", "c d");
 
-        assertThat("c d", equalTo(i.atomsString()));
-        assertThat("a||b", equalTo(i.expressionString()));
-        assertThat("a||b => c d", equalTo(i.toString()));
+        assertThat(i.atomsString(), equalTo("c d"));
+        assertThat(i.expressionString(), equalTo("a||b"));
+        assertThat(i.toString(), equalTo("a||b => c d"));
+        assertThat(i.labelSize(), equalTo(1));
     }
 
     @Test
@@ -54,9 +59,11 @@ public class ImplicationTest {
 
         Set<LabelAtom> empty = Collections.<LabelAtom>emptySet();
 
-        assertThat("c d", equalTo(i.atomsString()));
-        assertThat("", equalTo(i.expressionString()));
-        assertThat("false => c d", equalTo(i.toString()));
+        assertThat(i.atomsString(), equalTo("c d"));
+        assertThat(i.expressionString(), equalTo(""));
+        assertThat(i.toString(), equalTo("false => c d"));
         assertThat(i.infer(empty), equalTo((Collection<LabelAtom>) empty));
+        assertThat(i.expression(), equalTo(null));
+        assertThat(i.labelSize(), equalTo(0));
     }
 }
