@@ -25,6 +25,7 @@ package org.jenkinsci.plugins.impliedlabels;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import hudson.model.Label;
 import hudson.util.FormValidation;
@@ -45,6 +46,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.recipes.PresetData;
+import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
 public class ConfigTest {
 
@@ -109,6 +113,31 @@ public class ConfigTest {
         assertThat(config.doCheckExpression("!master"), equalTo(FormValidation.ok()));
 
         assertThat(config.doCheckExpression("!||&&").getMessage(), containsString("Invalid boolean expression"));
+    }
+
+    @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
+    @Test public void notAuthorizedToRead() throws Exception {
+        WebClient wc = j.createWebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+
+        String content = wc.goTo("label-implications").asText(); // Redirected to login
+        assertThat(content, containsString("Password:"));
+        assertThat(content, not(containsString(config.getDisplayName())));
+    }
+
+    @PresetData(DataSet.ANONYMOUS_READONLY)
+    @Test public void notAuthorizedToConfigure() throws Exception {
+        WebClient wc = j.createWebClient();
+
+        String content = wc.goTo("label-implications").asText();
+        assertThat(content, containsString(config.getDisplayName()));
+        assertThat(content, not(containsString("Password:")));
+
+        wc.setThrowExceptionOnFailingStatusCode(false);
+
+        content = wc.goTo("label-implications/configure").asText();
+        assertThat(content, containsString("Password:"));
+        assertThat(content, not(containsString(config.getDisplayName())));
     }
 
     private <T> TypeSafeMatcher<Collection<T>> sameMembers(Collection<T> impl) {
