@@ -23,7 +23,29 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
+  <d:taglib uri="local">
+    <d:tag name="labelLink">
+      <a href="${rootURL}/${label.url}" class="model-link inside">${text ?: label}</a>
+    </d:tag>
+    <d:tag name="atoms">
+      <j:forEach var="atom" items="${atoms}">
+        <local:labelLink label="${atom}"/><st:nbsp/>
+      </j:forEach>
+    </d:tag>
+    <d:tag name="redundantLabels">
+      <j:set var="redundant" value="${it.detectRedundantLabels(node)}"/>
+      <j:if test="${!redundant.isEmpty()}">
+        <tr>
+          <td>
+            <a href="${rootURL}/computer/${node.nodeName}" class="model-link inside">${node.displayName}</a>
+          </td>
+          <td><local:atoms atoms="${redundant}"/></td>
+        </tr>
+      </j:if>
+    </d:tag>
+  </d:taglib>
+
   <l:layout title="${it.displayName}">
     <l:header />
     <l:side-panel>
@@ -45,14 +67,22 @@ THE SOFTWARE.
         </tr>
         <j:forEach var="implication" items="${it.implications()}">
           <tr>
-            <td>
-              <j:forEach var="atom" items="${implication.atoms()}">
-                <a href="${rootURL}/${atom.url}">${atom}</a><st:nbsp/>
-              </j:forEach>
-            </td>
-            <td><a href="${rootURL}/${implication.expression().url}">${implication.expressionString()}</a></td>
+            <td><local:atoms atoms="${implication.atoms()}"/></td>
+            <td><local:labelLink label="${implication.expression()}" text="${implication.expressionString()}"/></td>
             <td>${implication.labelSize()}</td>
           </tr>
+        </j:forEach>
+      </table>
+
+      <h2>${%Redundant Labels}</h2>
+      <table class="pane sortable bigtable">
+        <tr>
+          <th>Node name</th>
+          <th>Redundant labels</th>
+        </tr>
+        <local:redundantLabels node="${app}"/>
+        <j:forEach var="node" items="${app.nodes}">
+          <local:redundantLabels node="${node}"/>
         </j:forEach>
       </table>
     </l:main-panel>

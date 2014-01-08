@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -122,6 +123,24 @@ public class Config extends ManagementLink {
             labels.addAll(i.infer(labels));
         }
         return labels;
+    }
+
+    /**
+     * Get list of configured labels that are explicitly declared but can be inferred using current implications
+     */
+    public @Nonnull Collection<LabelAtom> detectRedundantLabels(@Nonnull Node node) {
+        final @Nonnull Set<LabelAtom> declared = Label.parse(node.getLabelString());
+        final @Nonnull Set<LabelAtom> infered = new HashSet<LabelAtom>(implications.size());
+        final @Nonnull Set<LabelAtom> accumulated = new HashSet<LabelAtom>(declared);
+
+        for(Implication i: implications) {
+            Collection<LabelAtom> ii = i.infer(accumulated);
+            infered.addAll(ii);
+            accumulated.addAll(ii);
+        }
+
+        infered.retainAll(declared);
+        return infered;
     }
 
     private XmlFile getConfigFile() {
