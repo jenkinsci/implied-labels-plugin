@@ -26,7 +26,6 @@ package org.jenkinsci.plugins.impliedlabels;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.ManagementLink;
-import hudson.model.Messages;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
@@ -163,6 +162,7 @@ public class Config extends ManagementLink {
     }
 
     // see AbstractProject#doCheckAssignedLabelString
+    @Restricted(NoExternalUse.class)
     public FormValidation doCheckExpression(@QueryParameter String expression) {
         if (Util.fixEmpty(expression) == null) return FormValidation.ok();
 
@@ -171,12 +171,28 @@ public class Config extends ManagementLink {
             Label.parseExpression(expression);
         } catch (ANTLRException ex) {
 
-            return FormValidation.error(ex, Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(ex.getMessage()));
+            return FormValidation.error(ex, hudson.model.Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(ex.getMessage()));
         }
 // since 1.544
 //        return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
 //                j.getRootUrl(), l.getUrl(), l.getNodes().size() + l.getClouds().size()
 //        ));
         return FormValidation.ok();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public FormValidation doInferLabels(@QueryParameter String labelString) {
+        if (Util.fixEmpty(labelString) == null) return FormValidation.ok();
+
+        final @Nonnull Set<LabelAtom> labels = Label.parse(labelString);
+        for(Implication i: implications) {
+            labels.addAll(i.infer(labels));
+        }
+
+        labels.removeAll(Label.parse(labelString));
+
+        if (labels.isEmpty()) return FormValidation.ok("No labels infered");
+
+        return FormValidation.ok("Infered labels: %s", Util.join(labels, " "));
     }
 }

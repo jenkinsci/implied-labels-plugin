@@ -74,6 +74,14 @@ THE SOFTWARE.
         </j:forEach>
       </table>
 
+      <h2>${%Test implications}</h2>
+      <f:textbox name="labelString"/>
+      <div style="float:right">
+        <input type="button" value="Test" class="yui-button validate-button" onclick="validateButton('${rootURL}/label-implications/inferLabels/${method}','labelString',this)" />
+      </div>
+      <div style="display:none;"><img src="${imagesURL}/spinner.gif" /></div>
+      <div><!-- this is where the error message goes --></div>
+
       <h2>${%Redundant Labels}</h2>
       <table class="pane sortable bigtable">
         <tr>
