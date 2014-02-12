@@ -25,6 +25,7 @@ package org.jenkinsci.plugins.impliedlabels;
 
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.model.LabelFinder;
 import hudson.model.ManagementLink;
 import hudson.model.Label;
 import hudson.model.Node;
@@ -117,20 +118,40 @@ public class Config extends ManagementLink {
     }
 
     public @Nonnull Collection<LabelAtom> evaluate(@Nonnull Node node) {
-        final @Nonnull Set<LabelAtom> labels = Label.parse(node.getLabelString());
+        final @Nonnull Set<LabelAtom> labels = initialLabels(node);
+
         for(Implication i: implications) {
             labels.addAll(i.infer(labels));
         }
         return labels;
     }
 
+    /*
+     * Get labels to begin with. Those are configured labels, self label and labels contributed by other LabelFinders.
+     * see hudson.model.Node#getDynamicLabels()
+     */
+    private @Nonnull Set<LabelAtom> initialLabels(@Nonnull Node node) {
+        HashSet<LabelAtom> result = new HashSet<LabelAtom>();
+        result.addAll(Label.parse(node.getLabelString()));
+        result.add(node.getSelfLabel());
+
+        for (LabelFinder labeler : LabelFinder.all()) {
+            if (labeler instanceof Implier) continue; // skip Implier
+            // Filter out any bad(null) results from plugins
+            // for compatibility reasons, findLabels may return LabelExpression and not atom.
+            for (Label label : labeler.findLabels(node))
+                if (label instanceof LabelAtom) result.add((LabelAtom)label);
+        }
+        return result;
+    }
+
     /**
      * Get list of configured labels that are explicitly declared but can be inferred using current implications
      */
     public @Nonnull Collection<LabelAtom> detectRedundantLabels(@Nonnull Node node) {
-        final @Nonnull Set<LabelAtom> declared = Label.parse(node.getLabelString());
+        final @Nonnull Set<LabelAtom> initial = initialLabels(node);
         final @Nonnull Set<LabelAtom> infered = new HashSet<LabelAtom>(implications.size());
-        final @Nonnull Set<LabelAtom> accumulated = new HashSet<LabelAtom>(declared);
+        final @Nonnull Set<LabelAtom> accumulated = new HashSet<LabelAtom>(initial);
 
         for(Implication i: implications) {
             Collection<LabelAtom> ii = i.infer(accumulated);
@@ -138,7 +159,7 @@ public class Config extends ManagementLink {
             accumulated.addAll(ii);
         }
 
-        infered.retainAll(declared);
+        infered.retainAll(initial);
         return infered;
     }
 

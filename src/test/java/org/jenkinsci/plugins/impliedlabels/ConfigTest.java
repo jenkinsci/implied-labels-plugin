@@ -25,9 +25,13 @@ package org.jenkinsci.plugins.impliedlabels;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
+import hudson.Extension;
+import hudson.model.LabelFinder;
 import hudson.model.Label;
+import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import hudson.util.FormValidation;
 
@@ -38,6 +42,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import jenkins.model.Jenkins;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
@@ -100,7 +106,28 @@ public class ConfigTest {
         assertThat(j.jenkins.getLabels(), sameMembers(expected));
     }
 
-    private Label label(String label) {
+    @Test public void considerLabelsContributedByOtherLabelFinders() throws IOException {
+        j.jenkins.setLabelString("configured");
+        config.implications(Arrays.asList(
+                new Implication("configured && contributed && master", "final")
+        ));
+
+        assertThat(j.jenkins.getLabels(), hasItem(label("final")));
+    }
+
+    @Extension//@TestExtension("considerLabelsContributedByOtherLabelFinders")
+    public static class TestLabelFinder extends LabelFinder {
+        @Override public Collection<LabelAtom> findLabels(Node node) {
+            // @TestExtension does not seem to work using JenkinsRule
+            if (!node.getLabelString().contains("configured")) return Collections.emptyList();
+
+            return Arrays.asList(
+                    Jenkins.getInstance().getLabelAtom("contributed")
+            );
+        }
+    }
+
+    private LabelAtom label(String label) {
         return j.jenkins.getLabelAtom(label);
     }
 
