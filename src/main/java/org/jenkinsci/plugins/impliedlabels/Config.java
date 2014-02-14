@@ -97,7 +97,7 @@ public class Config extends ManagementLink {
         this.implications(req.bindJSONToList(
                 Implication.class, req.getSubmittedForm().get("impl")
         ));
-        rsp.sendRedirect2(Jenkins.getInstance().getRootUrl() + getUrlName());
+        rsp.sendRedirect("");
     }
 
     /*package*/ void implications(@Nonnull Collection<Implication> implications) throws IOException {
