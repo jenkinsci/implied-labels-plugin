@@ -75,7 +75,7 @@ THE SOFTWARE.
       </table>
 
       <h2>${%Test implications}</h2>
-      <f:textbox name="labelString"/>
+      <f:textbox name="labelString" autoCompleteDelimChar=" " autoCompleteUrl="${rootURL}/label-implications/autoCompleteLabels" />
       <div style="float:right">
         <input type="button" value="Test" class="yui-button validate-button" onclick="validateButton('${rootURL}/label-implications/inferLabels/${method}','labelString',this)" />
       </div>

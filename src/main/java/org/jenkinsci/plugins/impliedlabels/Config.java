@@ -25,6 +25,7 @@ package org.jenkinsci.plugins.impliedlabels;
 
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.model.AutoCompletionCandidates;
 import hudson.model.LabelFinder;
 import hudson.model.ManagementLink;
 import hudson.model.Label;
@@ -215,5 +216,25 @@ public class Config extends ManagementLink {
         if (labels.isEmpty()) return FormValidation.ok("No labels infered");
 
         return FormValidation.ok("Infered labels: %s", Util.join(labels, " "));
+    }
+
+    @Restricted(NoExternalUse.class)
+    public AutoCompletionCandidates doAutoCompleteLabels(@QueryParameter String value) {
+        AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+
+        for (LabelAtom atom: Jenkins.getInstance().getLabelAtoms()) {
+            if (atom.getName().startsWith(value)) {
+                candidates.add(atom.getName());
+            }
+        }
+        for(Implication i: implications) {
+            for (LabelAtom atom: i.atoms()) {
+                if (atom.getName().startsWith(value)) {
+                    candidates.add(atom.getName());
+                }
+            }
+        }
+
+        return candidates;
     }
 }
