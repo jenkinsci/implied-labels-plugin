@@ -27,10 +27,9 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import hudson.Extension;
 import hudson.model.LabelFinder;
-import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import hudson.util.FormValidation;
@@ -85,11 +84,7 @@ public class ConfigTest {
 
         config.evaluate(j.jenkins);
 
-        HashSet<Label> expected = new HashSet<Label>(Arrays.asList(
-                label("rhel65"), label("rhel6"), label("rhel"), label("linux"), label("master")
-        ));
-
-        assertThat(j.jenkins.getLabels(), sameMembers(expected));
+        assertThat(j.jenkins.getLabelAtoms(), sameMembers(labels("rhel65", "rhel6", "rhel", "linux", "master")));
     }
 
     @Test public void evaluateInAnyOrder() throws IOException {
@@ -99,11 +94,7 @@ public class ConfigTest {
         config.implications(implications);
         config.evaluate(j.jenkins);
 
-        HashSet<Label> expected = new HashSet<Label>(Arrays.asList(
-                label("rhel65"), label("rhel6"), label("rhel"), label("linux"), label("master")
-        ));
-
-        assertThat(j.jenkins.getLabels(), sameMembers(expected));
+        assertThat(j.jenkins.getLabelAtoms(), sameMembers(labels("rhel65", "rhel6", "rhel", "linux", "master")));
     }
 
     @Test public void considerLabelsContributedByOtherLabelFinders() throws IOException {
@@ -121,14 +112,20 @@ public class ConfigTest {
             // @TestExtension does not seem to work using JenkinsRule
             if (!node.getLabelString().contains("configured")) return Collections.emptyList();
 
-            return Arrays.asList(
-                    Jenkins.getInstance().getLabelAtom("contributed")
-            );
+            return labels("contributed");
         }
     }
 
-    private LabelAtom label(String label) {
-        return j.jenkins.getLabelAtom(label);
+    private static LabelAtom label(String label) {
+        return Jenkins.getInstance().getLabelAtom(label);
+    }
+
+    private static Set<LabelAtom> labels(String... names) {
+        HashSet<LabelAtom> labels = new HashSet<LabelAtom>(names.length);
+        for (String name: names) {
+            labels.add(label(name));
+        }
+        return labels;
     }
 
     @Test public void validateExpression() {
@@ -169,10 +166,10 @@ public class ConfigTest {
         assertThat(config.detectRedundantLabels(j.jenkins), this.<LabelAtom>sameMembers());
 
         j.jenkins.setLabelString("rhel65 linux");
-        assertThat(config.detectRedundantLabels(j.jenkins), this.sameMembers(j.jenkins.getLabelAtom("linux")));
+        assertThat(config.detectRedundantLabels(j.jenkins), this.sameMembers(label("linux")));
 
         j.jenkins.setLabelString("rhel65 linux");
-        assertThat(config.detectRedundantLabels(j.jenkins), this.sameMembers(j.jenkins.getLabelAtom("linux")));
+        assertThat(config.detectRedundantLabels(j.jenkins), this.sameMembers(label("linux")));
     }
 
     private <T> TypeSafeMatcher<Collection<T>> sameMembers(Collection<T> items) {
