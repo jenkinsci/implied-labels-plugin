@@ -35,8 +35,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -50,10 +50,10 @@ public class Implication {
     private static final @Nonnull Set<LabelAtom> NO_ATOMS = Collections.emptySet();
     private final @Nonnull Set<LabelAtom> atoms;
 
-    private final @Nullable Label expression;
+    private final @CheckForNull Label expression;
 
     @DataBoundConstructor
-    public Implication(String expression, String atoms) {
+    public Implication(@Nonnull String expression, @Nonnull String atoms) {
 
         this.atoms = Collections.unmodifiableSet(Label.parse(atoms));
         Label e;
@@ -119,26 +119,34 @@ public class Implication {
     }
 
     /*package*/ static @Nonnull List<Implication> sort(final @Nonnull Collection<Implication> implications) throws CycleDetectedException {
-        CyclicGraphDetector<Implication> sorter = new CyclicGraphDetector<Implication>() {
-            @Override
-            protected Iterable<Implication> getEdges(Implication current) {
-                List<Implication> edges = new ArrayList<Implication>();
-                if (current.expression == null) return edges;
-
-                for (Implication i: implications) {
-                    if (i == current) continue;
-                    if (i.expression == null) continue;
-
-                    if (Collections.disjoint(current.expression.listAtoms(), i.atoms)) continue;
-
-                    edges.add(i);
-                }
-
-                return edges;
-            }
-        };
+        CyclicGraphDetector<Implication> sorter = new ImplicationSorter(implications);
 
         sorter.run(implications);
         return sorter.getSorted();
+    }
+
+    private static final class ImplicationSorter extends CyclicGraphDetector<Implication> {
+        private final Collection<Implication> implications;
+
+        private ImplicationSorter(Collection<Implication> implications) {
+            this.implications = implications;
+        }
+
+        @Override
+        protected Iterable<Implication> getEdges(Implication current) {
+            List<Implication> edges = new ArrayList<Implication>();
+            if (current.expression == null) return edges;
+
+            for (Implication i: implications) {
+                if (i == current) continue;
+                if (i.expression == null) continue;
+
+                if (Collections.disjoint(current.expression.listAtoms(), i.atoms)) continue;
+
+                edges.add(i);
+            }
+
+            return edges;
+        }
     }
 }

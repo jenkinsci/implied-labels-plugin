@@ -28,18 +28,23 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.LabelFinder;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
+import hudson.slaves.DumbSlave;
 import hudson.util.FormValidation;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import jenkins.model.Jenkins;
@@ -55,6 +60,8 @@ import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
 public class ConfigTest {
+
+    private static final EnvVars NO_ENV = new EnvVars();
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
@@ -195,6 +202,64 @@ public class ConfigTest {
         @Override
         protected boolean matchesSafely(Collection<T> item) {
             return items.equals(new HashSet<T>(item));
+        }
+    }
+
+    @Test public void cacheImpliedLabels() throws Exception {
+        TrackingImplication tracker = new TrackingImplication();
+        ArrayList<Implication> impls = new ArrayList<Implication>(implications);
+        impls.add(tracker);
+        implications = impls;
+        config.implications(impls);
+
+        DumbSlave f1 = j.createSlave("f1", "fedora17", NO_ENV);
+        DumbSlave f2 = j.createSlave("f2", "fedora17", NO_ENV);
+        DumbSlave r6 = j.createSlave("r6", "rhel6", NO_ENV);
+        DumbSlave r6x = j.createSlave("r6x", "rhel6 something_extra", NO_ENV);
+
+        for (int i = 0; i < 3; i++) {
+            assertThat(config.evaluate(f1), sameMembers(labels("fedora17", "fedora", "linux", "f1")));
+            assertThat(config.evaluate(f2), sameMembers(labels("fedora17", "fedora", "linux", "f2")));
+            assertThat(config.evaluate(r6), sameMembers(labels("rhel6", "rhel", "linux", "r6")));
+            assertThat(config.evaluate(r6x), sameMembers(labels("rhel6", "rhel", "linux", "something_extra", "r6x")));
+        }
+
+        config.implications(impls);
+        tracker.clear();
+
+        for (int i = 0; i < 3; i++) {
+            assertThat(config.evaluate(f1), sameMembers(labels("fedora17", "fedora", "linux", "f1")));
+            assertThat(config.evaluate(f2), sameMembers(labels("fedora17", "fedora", "linux", "f2")));
+            assertThat(config.evaluate(r6), sameMembers(labels("rhel6", "rhel", "linux", "r6")));
+            assertThat(config.evaluate(r6x), sameMembers(labels("rhel6", "rhel", "linux", "something_extra", "r6x")));
+        }
+    }
+
+    private static final class TrackingImplication extends Implication {
+        private final Map<Collection<LabelAtom>, Throwable> log = new HashMap<Collection<LabelAtom>, Throwable>();
+
+        public TrackingImplication() {
+            super("", "");
+        }
+
+        @Override // Infer nothing
+        public Collection<LabelAtom> infer(Collection<LabelAtom> atoms) {
+            synchronized (log) {
+                Throwable where = log.get(atoms);
+                if (where != null) {
+                    AssertionError ae = new AssertionError("Duplicate label lookup for " + atoms);
+                    ae.addSuppressed(where);
+                    throw ae;
+                }
+                assert log.put(atoms, new Exception()) == null;
+            }
+            return Collections.emptyList();
+        }
+
+        public void clear() {
+            synchronized (log) {
+                log.clear();
+            }
         }
     }
 }

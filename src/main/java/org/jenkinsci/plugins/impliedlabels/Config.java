@@ -23,6 +23,7 @@
  */
 package org.jenkinsci.plugins.impliedlabels;
 
+import hudson.CopyOnWrite;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AutoCompletionCandidates;
@@ -38,11 +39,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
@@ -59,10 +64,16 @@ import antlr.ANTLRException;
 @Restricted(NoExternalUse.class)
 public class Config extends ManagementLink {
 
+    private static final @Nonnull Logger CACHE_LOGGER = Logger.getLogger("ConfigCaching");
+
     /**
      * Topologically sorted implications.
      */
+    @GuardedBy("configLock") @CopyOnWrite
     private @Nonnull List<Implication> implications = Collections.emptyList();
+    @GuardedBy("configLock")
+    transient private final @Nonnull Map<Collection<LabelAtom>, Collection<LabelAtom>> cache = new HashMap<Collection<LabelAtom>, Collection<LabelAtom>>();
+    transient private Object configLock = new Object();
 
     public Config() {
         try {
@@ -103,27 +114,45 @@ public class Config extends ManagementLink {
     /*package*/ void implications(@Nonnull Collection<Implication> implications) throws IOException {
         List<Implication> im;
         try {
-            im = Implication.sort(implications);
+            im = Collections.unmodifiableList(Implication.sort(implications));
         } catch (CycleDetectedException ex) {
             throw new IOException("Implication cycle detected", ex);
         }
 
-        synchronized (this.implications) {
+        synchronized (configLock) {
             this.implications = im;
-            save();
+            CACHE_LOGGER.fine("Clearing cache when implications changed");
+            this.cache.clear();
         }
+        save();
     }
 
     public @Nonnull List<Implication> implications() {
-        return Collections.unmodifiableList(this.implications);
+        synchronized (configLock) {
+            return this.implications;
+        }
     }
 
     public @Nonnull Collection<LabelAtom> evaluate(@Nonnull Node node) {
-        final @Nonnull Set<LabelAtom> labels = initialLabels(node);
+        final @Nonnull Set<LabelAtom> initial = initialLabels(node);
 
-        for(Implication i: implications) {
-            labels.addAll(i.infer(labels));
+        Collection<LabelAtom> labels = null;
+        synchronized (configLock) {
+            labels = cache.get(initial);
         }
+
+        if (labels == null) {
+            labels = new HashSet<LabelAtom>(initial);
+            for(Implication i: implications()) {
+                labels.addAll(i.infer(labels));
+            }
+
+            synchronized (configLock) {
+                CACHE_LOGGER.fine("Caching " + initial + " -> " + labels);
+                cache.put(initial, labels);
+            }
+        }
+
         return labels;
     }
 
@@ -132,7 +161,7 @@ public class Config extends ManagementLink {
      * see hudson.model.Node#getDynamicLabels()
      */
     private @Nonnull Set<LabelAtom> initialLabels(@Nonnull Node node) {
-        HashSet<LabelAtom> result = new HashSet<LabelAtom>();
+        final HashSet<LabelAtom> result = new HashSet<LabelAtom>();
         result.addAll(Label.parse(node.getLabelString()));
         result.add(node.getSelfLabel());
 
@@ -151,10 +180,10 @@ public class Config extends ManagementLink {
      */
     public @Nonnull Collection<LabelAtom> detectRedundantLabels(@Nonnull Node node) {
         final @Nonnull Set<LabelAtom> initial = initialLabels(node);
-        final @Nonnull Set<LabelAtom> infered = new HashSet<LabelAtom>(implications.size());
+        final @Nonnull Set<LabelAtom> infered = new HashSet<LabelAtom>();
         final @Nonnull Set<LabelAtom> accumulated = new HashSet<LabelAtom>(initial);
 
-        for(Implication i: implications) {
+        for(Implication i: implications()) {
             Collection<LabelAtom> ii = i.infer(accumulated);
             infered.addAll(ii);
             accumulated.addAll(ii);
@@ -207,7 +236,7 @@ public class Config extends ManagementLink {
         if (Util.fixEmpty(labelString) == null) return FormValidation.ok();
 
         final @Nonnull Set<LabelAtom> labels = Label.parse(labelString);
-        for(Implication i: implications) {
+        for(Implication i: implications()) {
             labels.addAll(i.infer(labels));
         }
 
@@ -227,7 +256,7 @@ public class Config extends ManagementLink {
                 candidates.add(atom.getName());
             }
         }
-        for(Implication i: implications) {
+        for(Implication i: implications()) {
             for (LabelAtom atom: i.atoms()) {
                 if (atom.getName().startsWith(value)) {
                     candidates.add(atom.getName());
