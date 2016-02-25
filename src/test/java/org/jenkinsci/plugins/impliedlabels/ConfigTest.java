@@ -146,7 +146,7 @@ public class ConfigTest {
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     @Test public void notAuthorizedToRead() throws Exception {
         WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         String content = wc.goTo("label-implications").asText(); // Redirected to login
         assertThat(content, containsString("Password:"));
@@ -161,7 +161,7 @@ public class ConfigTest {
         assertThat(content, containsString(config.getDisplayName()));
         assertThat(content, not(containsString("Password:")));
 
-        wc.setThrowExceptionOnFailingStatusCode(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         content = wc.goTo("label-implications/configure").asText();
         assertThat(content, containsString("Password:"));
