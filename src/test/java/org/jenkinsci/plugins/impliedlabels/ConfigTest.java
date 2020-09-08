@@ -28,6 +28,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.LabelFinder;
@@ -46,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import jenkins.model.Jenkins;
 
@@ -146,11 +150,13 @@ public class ConfigTest {
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     @Test public void notAuthorizedToRead() throws Exception {
         WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
-        String content = wc.goTo("label-implications").asText(); // Redirected to login
-        assertThat(content, containsString("Password:"));
-        assertThat(content, not(containsString(config.getDisplayName())));
+        try {
+            wc.getOptions().setPrintContentOnFailingStatusCode(false);
+            wc.goTo("label-implications");
+        } catch (FailingHttpStatusCodeException ex) {
+            assertThat(ex.getStatusMessage(), equalTo("Forbidden"));
+        }
     }
 
     @PresetData(DataSet.ANONYMOUS_READONLY)
@@ -161,11 +167,12 @@ public class ConfigTest {
         assertThat(content, containsString(config.getDisplayName()));
         assertThat(content, not(containsString("Password:")));
 
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-
-        content = wc.goTo("label-implications/configure").asText();
-        assertThat(content, containsString("Password:"));
-        assertThat(content, not(containsString(config.getDisplayName())));
+        try {
+            wc.getOptions().setPrintContentOnFailingStatusCode(false);
+            wc.goTo("label-implications/configure");
+        } catch (FailingHttpStatusCodeException ex) {
+            assertThat(ex.getStatusMessage(), equalTo("Forbidden"));
+        }
     }
 
     @Test public void detectRedundant() throws IOException {
