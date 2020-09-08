@@ -7,7 +7,7 @@
   </parent>
 
   <artifactId>implied-labels</artifactId>
-  <version>0.6-SNAPSHOT</version>
+  <version>0.6</version>
   <packaging>hpi</packaging>
   <name>Implied Labels Plugin</name>
   <description>Infer redundant labels automatically based on user declaration</description>
@@ -17,7 +17,7 @@
     <connection>scm:git:git://github.com/jenkinsci/implied-labels-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/implied-labels-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/implied-labels-plugin</url>
-    <tag>HEAD</tag>
+    <tag>implied-labels-0.6</tag>
   </scm>
 
   <dependencies>
