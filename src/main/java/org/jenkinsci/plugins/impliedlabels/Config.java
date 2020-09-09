@@ -72,8 +72,8 @@ public class Config extends ManagementLink {
     @GuardedBy("configLock") @CopyOnWrite
     private @Nonnull List<Implication> implications = Collections.emptyList();
     @GuardedBy("configLock")
-    transient private final @Nonnull Map<Collection<LabelAtom>, Collection<LabelAtom>> cache = new HashMap<Collection<LabelAtom>, Collection<LabelAtom>>();
-    transient private Object configLock = new Object();
+    transient private final @Nonnull Map<Collection<LabelAtom>, Collection<LabelAtom>> cache = new HashMap<>();
+    final transient private Object configLock = new Object();
 
     public Config() {
         try {
@@ -136,13 +136,13 @@ public class Config extends ManagementLink {
     public @Nonnull Collection<LabelAtom> evaluate(@Nonnull Node node) {
         final @Nonnull Set<LabelAtom> initial = initialLabels(node);
 
-        Collection<LabelAtom> labels = null;
+        Collection<LabelAtom> labels;
         synchronized (configLock) {
             labels = cache.get(initial);
         }
 
         if (labels == null) {
-            labels = new HashSet<LabelAtom>(initial);
+            labels = new HashSet<>(initial);
             for(Implication i: implications()) {
                 labels.addAll(i.infer(labels));
             }
@@ -161,8 +161,7 @@ public class Config extends ManagementLink {
      * see hudson.model.Node#getDynamicLabels()
      */
     private @Nonnull Set<LabelAtom> initialLabels(@Nonnull Node node) {
-        final HashSet<LabelAtom> result = new HashSet<LabelAtom>();
-        result.addAll(Label.parse(node.getLabelString()));
+        final HashSet<LabelAtom> result = new HashSet<>(Label.parse(node.getLabelString()));
         result.add(node.getSelfLabel());
 
         for (LabelFinder labeler : LabelFinder.all()) {
@@ -180,8 +179,8 @@ public class Config extends ManagementLink {
      */
     public @Nonnull Collection<LabelAtom> detectRedundantLabels(@Nonnull Node node) {
         final @Nonnull Set<LabelAtom> initial = initialLabels(node);
-        final @Nonnull Set<LabelAtom> infered = new HashSet<LabelAtom>();
-        final @Nonnull Set<LabelAtom> accumulated = new HashSet<LabelAtom>(initial);
+        final @Nonnull Set<LabelAtom> infered = new HashSet<>();
+        final @Nonnull Set<LabelAtom> accumulated = new HashSet<>(initial);
 
         for(Implication i: implications()) {
             Collection<LabelAtom> ii = i.infer(accumulated);
@@ -195,7 +194,7 @@ public class Config extends ManagementLink {
 
     private XmlFile getConfigFile() {
         final File file = new File(
-                Jenkins.getInstance().root,
+                Jenkins.get().root,
                 getClass().getCanonicalName() + ".xml"
         );
         return new XmlFile(Jenkins.XSTREAM, file);
@@ -251,7 +250,7 @@ public class Config extends ManagementLink {
     public AutoCompletionCandidates doAutoCompleteLabels(@QueryParameter String value) {
         AutoCompletionCandidates candidates = new AutoCompletionCandidates();
 
-        for (LabelAtom atom: Jenkins.getInstance().getLabelAtoms()) {
+        for (LabelAtom atom: Jenkins.get().getLabelAtoms()) {
             if (atom.getName().startsWith(value)) {
                 candidates.add(atom.getName());
             }

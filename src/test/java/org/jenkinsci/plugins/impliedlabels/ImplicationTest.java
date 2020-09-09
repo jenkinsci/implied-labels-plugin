@@ -28,7 +28,6 @@ import static org.junit.Assert.assertThat;
 import hudson.model.labels.LabelAtom;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -44,7 +43,7 @@ public class ImplicationTest {
 
     @Test
     public void valid() throws IOException {
-        Jenkins.getInstance().setLabelString("a");
+        Jenkins.get().setLabelString("a");
         Implication i = new Implication("a||b", "c d");
 
         assertThat(i.atomsString(), equalTo("c d"));
@@ -57,12 +56,12 @@ public class ImplicationTest {
     public void invalid() {
         Implication i = new Implication("||", "c d");
 
-        Set<LabelAtom> empty = Collections.<LabelAtom>emptySet();
+        Set<LabelAtom> empty = Collections.emptySet();
 
         assertThat(i.atomsString(), equalTo("c d"));
         assertThat(i.expressionString(), equalTo(""));
         assertThat(i.toString(), equalTo("false => c d"));
-        assertThat(i.infer(empty), equalTo((Collection<LabelAtom>) empty));
+        assertThat(i.infer(empty), equalTo(empty));
         assertThat(i.expression(), equalTo(null));
         assertThat(i.labelSize(), equalTo(0));
     }

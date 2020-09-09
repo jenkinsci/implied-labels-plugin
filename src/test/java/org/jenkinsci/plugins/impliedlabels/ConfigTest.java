@@ -28,9 +28,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.LabelFinder;
@@ -49,7 +49,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import jenkins.model.Jenkins;
 
@@ -62,6 +61,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
+
+import javax.annotation.Nonnull;
 
 public class ConfigTest {
 
@@ -110,7 +111,7 @@ public class ConfigTest {
 
     @Test public void considerLabelsContributedByOtherLabelFinders() throws IOException {
         j.jenkins.setLabelString("configured");
-        config.implications(Arrays.asList(
+        config.implications(Collections.singletonList(
                 new Implication("configured && contributed && master", "final")
         ));
 
@@ -128,11 +129,11 @@ public class ConfigTest {
     }
 
     private static LabelAtom label(String label) {
-        return Jenkins.getInstance().getLabelAtom(label);
+        return Jenkins.get().getLabelAtom(label);
     }
 
     private static Set<LabelAtom> labels(String... names) {
-        HashSet<LabelAtom> labels = new HashSet<LabelAtom>(names.length);
+        HashSet<LabelAtom> labels = new HashSet<>(names.length);
         for (String name: names) {
             labels.add(label(name));
         }
@@ -177,7 +178,7 @@ public class ConfigTest {
 
     @Test public void detectRedundant() throws IOException {
         j.jenkins.setLabelString("rhel65");
-        assertThat(config.detectRedundantLabels(j.jenkins), this.<LabelAtom>sameMembers());
+        assertThat(config.detectRedundantLabels(j.jenkins), this.sameMembers());
 
         j.jenkins.setLabelString("rhel65 linux");
         assertThat(config.detectRedundantLabels(j.jenkins), this.sameMembers(label("linux")));
@@ -187,11 +188,11 @@ public class ConfigTest {
     }
 
     private <T> TypeSafeMatcher<Collection<T>> sameMembers(Collection<T> items) {
-        return new SameMembers<T>(items);
+        return new SameMembers<>(items);
     }
 
     private <T> TypeSafeMatcher<Collection<T>> sameMembers(T... items) {
-        return new SameMembers<T>(Arrays.asList(items));
+        return new SameMembers<>(Arrays.asList(items));
     }
 
     private static class SameMembers<T> extends TypeSafeMatcher<Collection<T>> {
@@ -199,7 +200,7 @@ public class ConfigTest {
         private final Set<T> items;
 
         public SameMembers(Collection<T> items) {
-            this.items = new HashSet<T>(items);
+            this.items = new HashSet<>(items);
         }
 
         public void describeTo(Description description) {
@@ -208,13 +209,13 @@ public class ConfigTest {
 
         @Override
         protected boolean matchesSafely(Collection<T> item) {
-            return items.equals(new HashSet<T>(item));
+            return items.equals(new HashSet<>(item));
         }
     }
 
     @Test public void cacheImpliedLabels() throws Exception {
         TrackingImplication tracker = new TrackingImplication();
-        ArrayList<Implication> impls = new ArrayList<Implication>(implications);
+        ArrayList<Implication> impls = new ArrayList<>(implications);
         impls.add(tracker);
         implications = impls;
         config.implications(impls);
@@ -243,14 +244,14 @@ public class ConfigTest {
     }
 
     private static final class TrackingImplication extends Implication {
-        private final Map<Collection<LabelAtom>, Throwable> log = new HashMap<Collection<LabelAtom>, Throwable>();
+        private final Map<Collection<LabelAtom>, Throwable> log = new HashMap<>();
 
         public TrackingImplication() {
             super("", "");
         }
 
-        @Override // Infer nothing
-        public Collection<LabelAtom> infer(Collection<LabelAtom> atoms) {
+        @Nonnull @Override // Infer nothing
+        public Collection<LabelAtom> infer(@Nonnull Collection<LabelAtom> atoms) {
             synchronized (log) {
                 Throwable where = log.get(atoms);
                 if (where != null) {
@@ -258,7 +259,7 @@ public class ConfigTest {
                     ae.addSuppressed(where);
                     throw ae;
                 }
-                assert log.put(atoms, new Exception()) == null;
+                assertEquals(null, log.put(atoms, new Exception()));
             }
             return Collections.emptyList();
         }

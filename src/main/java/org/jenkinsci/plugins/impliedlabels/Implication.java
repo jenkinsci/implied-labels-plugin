@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.CheckForNull;
@@ -111,11 +112,8 @@ public class Implication {
 
         Implication other = (Implication) rhs;
 
-        if (!atoms.equals(other.atoms)) return false;
-        return expression == null
-                ? other.expression == null
-                : expression.equals(other.expression)
-        ;
+        if (!Objects.equals(atoms, other.atoms)) return false;
+        return Objects.equals(expression, other.expression);
     }
 
     /*package*/ static @Nonnull List<Implication> sort(final @Nonnull Collection<Implication> implications) throws CycleDetectedException {
@@ -134,7 +132,7 @@ public class Implication {
 
         @Override
         protected Iterable<Implication> getEdges(Implication current) {
-            List<Implication> edges = new ArrayList<Implication>();
+            List<Implication> edges = new ArrayList<>();
             if (current.expression == null) return edges;
 
             for (Implication i: implications) {
