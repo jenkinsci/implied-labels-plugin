@@ -222,7 +222,7 @@ public class Config extends ManagementLink {
             Label.parseExpression(expression);
         } catch (ANTLRException ex) {
 
-            return FormValidation.error(ex, hudson.model.Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(ex.getMessage()));
+            return FormValidation.error(ex, "Invalid label expression");
         }
 // since 1.544
 //        return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(

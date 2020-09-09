@@ -144,7 +144,7 @@ public class ConfigTest {
         assertThat(config.doCheckExpression("master"), equalTo(FormValidation.ok()));
         assertThat(config.doCheckExpression("!master"), equalTo(FormValidation.ok()));
 
-        assertThat(config.doCheckExpression("!||&&").getMessage(), containsString("Invalid boolean expression"));
+        assertThat(config.doCheckExpression("!||&&").getMessage(), containsString("Invalid label expression"));
     }
 
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
