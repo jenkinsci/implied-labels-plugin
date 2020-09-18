@@ -46,7 +46,7 @@ THE SOFTWARE.
     </d:tag>
   </d:taglib>
 
-  <l:layout title="${it.displayName}">
+  <l:layout permission="${app.ADMINISTER}" title="${it.displayName}">
     <l:header />
     <l:side-panel>
       <l:tasks>

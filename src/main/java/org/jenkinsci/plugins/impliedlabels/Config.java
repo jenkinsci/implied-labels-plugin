@@ -57,9 +57,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import antlr.ANTLRException;
+import org.kohsuke.stapler.verb.POST;
 
 @Restricted(NoExternalUse.class)
 public class Config extends ManagementLink {
@@ -103,8 +103,9 @@ public class Config extends ManagementLink {
         return "label-implications";
     }
 
-    @RequirePOST
+    @POST
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         this.implications(req.bindJSONToList(
                 Implication.class, req.getSubmittedForm().get("impl")
         ));

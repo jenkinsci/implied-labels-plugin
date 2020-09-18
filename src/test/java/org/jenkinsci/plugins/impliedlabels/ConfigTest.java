@@ -163,13 +163,15 @@ public class ConfigTest {
     @PresetData(DataSet.ANONYMOUS_READONLY)
     @Test public void notAuthorizedToConfigure() throws Exception {
         WebClient wc = j.createWebClient();
-
-        String content = wc.goTo("label-implications").asText();
-        assertThat(content, containsString(config.getDisplayName()));
-        assertThat(content, not(containsString("Password:")));
+        wc.getOptions().setPrintContentOnFailingStatusCode(false);
 
         try {
-            wc.getOptions().setPrintContentOnFailingStatusCode(false);
+            wc.goTo("label-implications");
+        } catch (FailingHttpStatusCodeException ex) {
+            assertThat(ex.getStatusMessage(), equalTo("Forbidden"));
+        }
+
+        try {
             wc.goTo("label-implications/configure");
         } catch (FailingHttpStatusCodeException ex) {
             assertThat(ex.getStatusMessage(), equalTo("Forbidden"));
