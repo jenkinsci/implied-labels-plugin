@@ -84,6 +84,11 @@ public class Config extends ManagementLink {
         }
     }
 
+    @Override
+    public ManagementLink.Category getCategory() {
+        return ManagementLink.Category.CONFIGURATION;
+    }
+
     public String getDisplayName() {
         return "Label implications";
     }
