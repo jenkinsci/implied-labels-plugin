@@ -26,10 +26,10 @@ package org.jenkinsci.plugins.impliedlabels;
 import hudson.Extension;
 import hudson.Plugin;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 public class ImpliedLabelsPlugin extends Plugin {
 
-    @Extension public static final @Nonnull Config config = new Config();
-    @Extension public static final @Nonnull Implier implier = new Implier(config);
+    @Extension public static final @NonNull Config config = new Config();
+    @Extension public static final @NonNull Implier implier = new Implier(config);
 }
