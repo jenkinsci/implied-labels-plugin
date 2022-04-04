@@ -11,7 +11,6 @@
   <version>${revision}${changelist}</version>
   <packaging>hpi</packaging>
   <name>Implied Labels Plugin</name>
-  <description>Infer redundant labels automatically based on user declaration</description>
   <url>https://github.com/jenkinsci/implied-labels-plugin</url>
 
   <scm>
