@@ -62,7 +62,7 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 public class ConfigTest {
 
@@ -252,8 +252,8 @@ public class ConfigTest {
             super("", "");
         }
 
-        @Nonnull @Override // Infer nothing
-        public Collection<LabelAtom> infer(@Nonnull Collection<LabelAtom> atoms) {
+        @NonNull @Override // Infer nothing
+        public Collection<LabelAtom> infer(@NonNull Collection<LabelAtom> atoms) {
             synchronized (log) {
                 Throwable where = log.get(atoms);
                 if (where != null) {
