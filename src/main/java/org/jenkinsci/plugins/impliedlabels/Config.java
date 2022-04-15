@@ -46,8 +46,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import net.jcip.annotations.GuardedBy;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
