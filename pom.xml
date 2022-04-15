@@ -65,7 +65,6 @@
     <changelist>-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/implied-labels-plugin</gitHubRepo>
     <jenkins.version>2.263.1</jenkins.version>
-    <java.level>8</java.level>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <surefire.useFile>false</surefire.useFile>
