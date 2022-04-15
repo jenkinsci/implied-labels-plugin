@@ -24,7 +24,7 @@
 package org.jenkinsci.plugins.impliedlabels;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import hudson.model.labels.LabelAtom;
 
 import java.io.IOException;
