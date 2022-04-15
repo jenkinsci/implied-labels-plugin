@@ -50,8 +50,8 @@ THE SOFTWARE.
     <l:header />
     <l:side-panel>
       <l:tasks>
-        <l:task icon="images/24x24/up.png" href="${rootURL}/manage" title="${%Manage Jenkins}" permission="${app.ADMINISTER}" />
-        <l:task icon="images/24x24/setting.png" href="configure" title="${%Configure}" permission="${app.ADMINISTER}" />
+        <l:task icon="icon-gear2 icon-md" href="${rootURL}/manage" title="${%Manage Jenkins}" permission="${app.ADMINISTER}" />
+        <l:task icon="icon-setting icon-md" href="configure" title="${%Configure}" permission="${app.ADMINISTER}" />
       </l:tasks>
       <t:executors computers="${h.singletonList(it)}" />
     </l:side-panel>
