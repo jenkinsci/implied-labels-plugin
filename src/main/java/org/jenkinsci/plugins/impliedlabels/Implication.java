@@ -37,7 +37,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -48,13 +48,13 @@ import antlr.ANTLRException;
 @Restricted(NoExternalUse.class)
 public class Implication {
 
-    private static final @Nonnull Set<LabelAtom> NO_ATOMS = Collections.emptySet();
-    private final @Nonnull Set<LabelAtom> atoms;
+    private static final @NonNull Set<LabelAtom> NO_ATOMS = Collections.emptySet();
+    private final @NonNull Set<LabelAtom> atoms;
 
     private final @CheckForNull Label expression;
 
     @DataBoundConstructor
-    public Implication(@Nonnull String expression, @Nonnull String atoms) {
+    public Implication(@NonNull String expression, @NonNull String atoms) {
 
         this.atoms = Collections.unmodifiableSet(Label.parse(atoms));
         Label e;
@@ -87,7 +87,7 @@ public class Implication {
         return expression.getNodes().size() + expression.getClouds().size();
     }
 
-    public @Nonnull Collection<LabelAtom> infer(@Nonnull Collection<LabelAtom> atoms) {
+    public @NonNull Collection<LabelAtom> infer(@NonNull Collection<LabelAtom> atoms) {
         return expression != null && expression.matches(atoms)
                 ? this.atoms
                 : NO_ATOMS
@@ -116,7 +116,7 @@ public class Implication {
         return Objects.equals(expression, other.expression);
     }
 
-    /*package*/ static @Nonnull List<Implication> sort(final @Nonnull Collection<Implication> implications) throws CycleDetectedException {
+    /*package*/ static @NonNull List<Implication> sort(final @NonNull Collection<Implication> implications) throws CycleDetectedException {
         CyclicGraphDetector<Implication> sorter = new ImplicationSorter(implications);
 
         sorter.run(implications);
