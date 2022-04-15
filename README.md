@@ -2,8 +2,8 @@
 
 Infer dynamic node labels using configured implications.
 
-Lets have a node with `linux`, `rhel`, `rhel6` and `rhel6_4` labels.
-Most of this information is redundant and can be inferred from the `rhel6_4`
+Lets have a node with `linux`, `RHEL`, `RHEL8` and `RHEL8_5` labels.
+Most of this information is redundant and can be inferred from the `RHEL8_5`
 label. Here is an excerpt of the Implied Labels Plugin configuration to do
 just that.
 
