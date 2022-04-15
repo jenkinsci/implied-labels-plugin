@@ -46,8 +46,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.annotation.Nonnull;
 import net.jcip.annotations.GuardedBy;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
@@ -64,15 +64,15 @@ import org.kohsuke.stapler.verb.POST;
 @Restricted(NoExternalUse.class)
 public class Config extends ManagementLink {
 
-    private static final @Nonnull Logger CACHE_LOGGER = Logger.getLogger("ConfigCaching");
+    private static final @NonNull Logger CACHE_LOGGER = Logger.getLogger("ConfigCaching");
 
     /**
      * Topologically sorted implications.
      */
     @GuardedBy("configLock") @CopyOnWrite
-    private @Nonnull List<Implication> implications = Collections.emptyList();
+    private @NonNull List<Implication> implications = Collections.emptyList();
     @GuardedBy("configLock")
-    transient private final @Nonnull Map<Collection<LabelAtom>, Collection<LabelAtom>> cache = new HashMap<>();
+    transient private final @NonNull Map<Collection<LabelAtom>, Collection<LabelAtom>> cache = new HashMap<>();
     final transient private Object configLock = new Object();
 
     public Config() {
@@ -117,7 +117,7 @@ public class Config extends ManagementLink {
         rsp.sendRedirect("");
     }
 
-    /*package*/ void implications(@Nonnull Collection<Implication> implications) throws IOException {
+    /*package*/ void implications(@NonNull Collection<Implication> implications) throws IOException {
         List<Implication> im;
         try {
             im = Collections.unmodifiableList(Implication.sort(implications));
@@ -133,14 +133,14 @@ public class Config extends ManagementLink {
         save();
     }
 
-    public @Nonnull List<Implication> implications() {
+    public @NonNull List<Implication> implications() {
         synchronized (configLock) {
             return this.implications;
         }
     }
 
-    public @Nonnull Collection<LabelAtom> evaluate(@Nonnull Node node) {
-        final @Nonnull Set<LabelAtom> initial = initialLabels(node);
+    public @NonNull Collection<LabelAtom> evaluate(@NonNull Node node) {
+        final @NonNull Set<LabelAtom> initial = initialLabels(node);
 
         Collection<LabelAtom> labels;
         synchronized (configLock) {
@@ -166,7 +166,7 @@ public class Config extends ManagementLink {
      * Get labels to begin with. Those are configured labels, self label and labels contributed by other LabelFinders.
      * see hudson.model.Node#getDynamicLabels()
      */
-    private @Nonnull Set<LabelAtom> initialLabels(@Nonnull Node node) {
+    private @NonNull Set<LabelAtom> initialLabels(@NonNull Node node) {
         final HashSet<LabelAtom> result = new HashSet<>(Label.parse(node.getLabelString()));
         result.add(node.getSelfLabel());
 
@@ -183,10 +183,10 @@ public class Config extends ManagementLink {
     /**
      * Get list of configured labels that are explicitly declared but can be inferred using current implications
      */
-    public @Nonnull Collection<LabelAtom> detectRedundantLabels(@Nonnull Node node) {
-        final @Nonnull Set<LabelAtom> initial = initialLabels(node);
-        final @Nonnull Set<LabelAtom> infered = new HashSet<>();
-        final @Nonnull Set<LabelAtom> accumulated = new HashSet<>(initial);
+    public @NonNull Collection<LabelAtom> detectRedundantLabels(@NonNull Node node) {
+        final @NonNull Set<LabelAtom> initial = initialLabels(node);
+        final @NonNull Set<LabelAtom> infered = new HashSet<>();
+        final @NonNull Set<LabelAtom> accumulated = new HashSet<>(initial);
 
         for(Implication i: implications()) {
             Collection<LabelAtom> ii = i.infer(accumulated);
@@ -240,7 +240,7 @@ public class Config extends ManagementLink {
     public FormValidation doInferLabels(@QueryParameter String labelString) {
         if (Util.fixEmpty(labelString) == null) return FormValidation.ok();
 
-        final @Nonnull Set<LabelAtom> labels = Label.parse(labelString);
+        final @NonNull Set<LabelAtom> labels = Label.parse(labelString);
         for(Implication i: implications()) {
             labels.addAll(i.infer(labels));
         }

@@ -29,16 +29,16 @@ import hudson.model.labels.LabelAtom;
 
 import java.util.Collection;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author ogondza
  */
 /*package*/ class Implier extends LabelFinder {
 
-    private final @Nonnull Config config;
+    private final @NonNull Config config;
 
-    public Implier(@Nonnull Config config) {
+    public Implier(@NonNull Config config) {
         this.config = config;
     }
 
