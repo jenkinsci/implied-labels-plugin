@@ -72,6 +72,7 @@ public class ConfigTest {
 
     private Config config;
     private List<Implication> implications;
+    private String controllerLabel;
 
     @Before public void setUp() throws IOException {
         config = ImpliedLabelsPlugin.config;
@@ -83,6 +84,7 @@ public class ConfigTest {
                 new Implication("||", "invalid")
         );
         config.implications(implications);
+        controllerLabel = j.jenkins.get().getSelfLabel().getName();
     }
 
     @Test public void roundtrip() {
@@ -96,7 +98,7 @@ public class ConfigTest {
 
         config.evaluate(j.jenkins);
 
-        assertThat(j.jenkins.getLabelAtoms(), sameMembers(labels("rhel65", "rhel6", "rhel", "linux", "master")));
+        assertThat(j.jenkins.getLabelAtoms(), sameMembers(labels("rhel65", "rhel6", "rhel", "linux", controllerLabel)));
     }
 
     @Test public void evaluateInAnyOrder() throws IOException {
@@ -106,13 +108,13 @@ public class ConfigTest {
         config.implications(implications);
         config.evaluate(j.jenkins);
 
-        assertThat(j.jenkins.getLabelAtoms(), sameMembers(labels("rhel65", "rhel6", "rhel", "linux", "master")));
+        assertThat(j.jenkins.getLabelAtoms(), sameMembers(labels("rhel65", "rhel6", "rhel", "linux", controllerLabel)));
     }
 
     @Test public void considerLabelsContributedByOtherLabelFinders() throws IOException {
         j.jenkins.setLabelString("configured");
         config.implications(Collections.singletonList(
-                new Implication("configured && contributed && master", "final")
+                new Implication("configured && contributed && " + controllerLabel, "final")
         ));
 
         assertThat(j.jenkins.getLabels(), hasItem(label("final")));
@@ -142,8 +144,8 @@ public class ConfigTest {
 
     @Test public void validateExpression() {
         assertThat(config.doCheckExpression(""), equalTo(FormValidation.ok()));
-        assertThat(config.doCheckExpression("master"), equalTo(FormValidation.ok()));
-        assertThat(config.doCheckExpression("!master"), equalTo(FormValidation.ok()));
+        assertThat(config.doCheckExpression(controllerLabel), equalTo(FormValidation.ok()));
+        assertThat(config.doCheckExpression("!" + controllerLabel), equalTo(FormValidation.ok()));
 
         assertThat(config.doCheckExpression("!||&&").getMessage(), containsString("Invalid label expression"));
     }
