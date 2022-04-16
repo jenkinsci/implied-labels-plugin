@@ -277,6 +277,13 @@ public class ConfigTest {
         assertThat(candidates.getValues(), is(empty()));
     }
 
+    @Test public void testAutoCompleteLabels_Implication() {
+        /* Implication should autocomplete */
+        String impliedLabelPrefix = "fed";
+        AutoCompletionCandidates candidates = config.doAutoCompleteLabels(impliedLabelPrefix);
+        assertThat(candidates.getValues(), hasItem("fedora"));
+    }
+
     private static final class TrackingImplication extends Implication {
         private final Map<Collection<LabelAtom>, Throwable> log = new HashMap<>();
 
