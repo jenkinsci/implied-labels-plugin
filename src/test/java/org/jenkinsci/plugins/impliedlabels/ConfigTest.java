@@ -29,11 +29,13 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertEquals;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.model.AutoCompletionCandidates;
 import hudson.model.LabelFinder;
 import hudson.model.ManagementLink;
 import hudson.model.Node;
@@ -259,6 +261,20 @@ public class ConfigTest {
 
     @Test public void testIconFileName() {
         assertThat(config.getIconFileName(), is("/plugin/implied-labels/icons/48x48/attribute.png"));
+    }
+
+    @Test public void testAutoCompleteLabels() {
+        /* Prefix substring of controller label should autocomplete to full controller label */
+        String controllerLabelPrefix = controllerLabel.substring(0, 4);
+        AutoCompletionCandidates candidates = config.doAutoCompleteLabels(controllerLabelPrefix);
+        assertThat(candidates.getValues(), hasItem(controllerLabel));
+    }
+
+    @Test public void testAutoCompleteLabels_Invalid() {
+        /* Invalid prefix should not autocomplete */
+        String invalidPrefix = "invalid-prefix-for-auto-complete";
+        AutoCompletionCandidates candidates = config.doAutoCompleteLabels(invalidPrefix);
+        assertThat(candidates.getValues(), is(empty()));
     }
 
     private static final class TrackingImplication extends Implication {
