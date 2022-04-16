@@ -24,8 +24,8 @@
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.263.x</artifactId>
-        <version>984.vb5eaac999a7e</version>
+        <artifactId>bom-2.319.x</artifactId>
+        <version>1246.va_b_50630c1d19</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -64,7 +64,7 @@
     <revision>0.10</revision>
     <changelist>-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/implied-labels-plugin</gitHubRepo>
-    <jenkins.version>2.263.1</jenkins.version>
+    <jenkins.version>2.319.3</jenkins.version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <surefire.useFile>false</surefire.useFile>
