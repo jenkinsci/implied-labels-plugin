@@ -26,6 +26,7 @@ package org.jenkinsci.plugins.impliedlabels;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -34,6 +35,7 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.LabelFinder;
+import hudson.model.ManagementLink;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.DumbSlave;
@@ -245,6 +247,18 @@ public class ConfigTest {
             assertThat(config.evaluate(r6), sameMembers(labels("rhel6", "rhel", "linux", "r6")));
             assertThat(config.evaluate(r6x), sameMembers(labels("rhel6", "rhel", "linux", "something_extra", "r6x")));
         }
+    }
+
+    @Test public void testManagementCategory() {
+        assertThat(config.getCategory(), is(ManagementLink.Category.CONFIGURATION));
+    }
+
+    @Test public void testDescription() {
+        assertThat(config.getDescription(), is("Infer redundant labels automatically based on user declaration"));
+    }
+
+    @Test public void testIconFileName() {
+        assertThat(config.getIconFileName(), is("/plugin/implied-labels/icons/48x48/attribute.png"));
     }
 
     private static final class TrackingImplication extends Implication {
