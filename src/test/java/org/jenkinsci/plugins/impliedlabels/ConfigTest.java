@@ -26,14 +26,18 @@ package org.jenkinsci.plugins.impliedlabels;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertEquals;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.model.AutoCompletionCandidates;
 import hudson.model.LabelFinder;
+import hudson.model.ManagementLink;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.DumbSlave;
@@ -245,6 +249,39 @@ public class ConfigTest {
             assertThat(config.evaluate(r6), sameMembers(labels("rhel6", "rhel", "linux", "r6")));
             assertThat(config.evaluate(r6x), sameMembers(labels("rhel6", "rhel", "linux", "something_extra", "r6x")));
         }
+    }
+
+    @Test public void testManagementCategory() {
+        assertThat(config.getCategory(), is(ManagementLink.Category.CONFIGURATION));
+    }
+
+    @Test public void testDescription() {
+        assertThat(config.getDescription(), is("Infer redundant labels automatically based on user declaration"));
+    }
+
+    @Test public void testIconFileName() {
+        assertThat(config.getIconFileName(), is("/plugin/implied-labels/icons/48x48/attribute.png"));
+    }
+
+    @Test public void testAutoCompleteLabels() {
+        /* Prefix substring of controller label should autocomplete to full controller label */
+        String controllerLabelPrefix = controllerLabel.substring(0, 4);
+        AutoCompletionCandidates candidates = config.doAutoCompleteLabels(controllerLabelPrefix);
+        assertThat(candidates.getValues(), hasItem(controllerLabel));
+    }
+
+    @Test public void testAutoCompleteLabels_Invalid() {
+        /* Invalid prefix should not autocomplete */
+        String invalidPrefix = "invalid-prefix-for-auto-complete";
+        AutoCompletionCandidates candidates = config.doAutoCompleteLabels(invalidPrefix);
+        assertThat(candidates.getValues(), is(empty()));
+    }
+
+    @Test public void testAutoCompleteLabels_Implication() {
+        /* Implication should autocomplete */
+        String impliedLabelPrefix = "fed";
+        AutoCompletionCandidates candidates = config.doAutoCompleteLabels(impliedLabelPrefix);
+        assertThat(candidates.getValues(), hasItem("fedora"));
     }
 
     private static final class TrackingImplication extends Implication {
