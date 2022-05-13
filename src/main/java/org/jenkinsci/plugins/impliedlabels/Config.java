@@ -247,7 +247,7 @@ public class Config extends ManagementLink {
 
         labels.removeAll(Label.parse(labelString));
 
-        if (labels.isEmpty()) return FormValidation.ok("No labels infered");
+        if (labels.isEmpty()) return FormValidation.ok("No labels inferred");
 
         return FormValidation.ok("Infered labels: %s", Util.join(labels, " "));
     }
