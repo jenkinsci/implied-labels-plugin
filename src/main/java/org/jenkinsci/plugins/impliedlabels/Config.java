@@ -90,12 +90,12 @@ public class Config extends ManagementLink {
     }
 
     public String getDisplayName() {
-        return "Label implications";
+        return Messages.displayName();
     }
 
     @Override
     public String getDescription() {
-        return "Infer redundant labels automatically based on user declaration";
+        return Messages.infer_redundant_labels();
     }
 
     @Override
@@ -227,7 +227,7 @@ public class Config extends ManagementLink {
             Label.parseExpression(expression);
         } catch (ANTLRException ex) {
 
-            return FormValidation.error(ex, "Invalid label expression");
+            return FormValidation.error(ex, Messages.invalid_label_expression());
         }
 // since 1.544
 //        return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
@@ -247,9 +247,9 @@ public class Config extends ManagementLink {
 
         labels.removeAll(Label.parse(labelString));
 
-        if (labels.isEmpty()) return FormValidation.ok("No labels infered");
+        if (labels.isEmpty()) return FormValidation.ok(Messages.no_labels_inferred());
 
-        return FormValidation.ok("Infered labels: %s", Util.join(labels, " "));
+        return FormValidation.ok(Messages.inferred_labels(Util.join(labels, " ")));
     }
 
     @Restricted(NoExternalUse.class)

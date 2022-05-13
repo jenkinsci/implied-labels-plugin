@@ -50,7 +50,7 @@ THE SOFTWARE.
     <l:header />
     <l:side-panel>
       <l:tasks>
-        <l:task icon="icon-gear2 icon-md" href="${rootURL}/manage" title="${%Manage Jenkins}" permission="${app.ADMINISTER}" />
+        <l:task icon="icon-gear2 icon-md" href="${rootURL}/manage" title="${%Manage_Jenkins}" permission="${app.ADMINISTER}" />
         <l:task icon="icon-setting icon-md" href="configure" title="${%Configure}" permission="${app.ADMINISTER}" />
       </l:tasks>
       <t:executors computers="${h.singletonList(it)}" />
@@ -61,9 +61,9 @@ THE SOFTWARE.
 
       <table class="pane sortable bigtable">
         <tr>
-          <th>Infered labels</th>
-          <th>Expression</th>
-          <th>Size</th>
+          <th>${%Inferred_labels}</th>
+          <th>${%Expression}</th>
+          <th>${%Size}</th>
         </tr>
         <j:forEach var="implication" items="${it.implications()}">
           <tr>
@@ -74,19 +74,19 @@ THE SOFTWARE.
         </j:forEach>
       </table>
 
-      <h2>${%Test implications}</h2>
+      <h2>${%Test_implications}</h2>
       <f:textbox name="labelString" autoCompleteDelimChar=" " autoCompleteUrl="${rootURL}/label-implications/autoCompleteLabels" />
       <div style="float:right">
-        <input type="button" value="Test" class="yui-button validate-button" onclick="validateButton('${rootURL}/label-implications/inferLabels/${method}','labelString',this)" />
+        <input type="button" value="${%Test}" class="yui-button validate-button" onclick="validateButton('${rootURL}/label-implications/inferLabels/${method}','labelString',this)" />
       </div>
       <div style="display:none;"><img src="${imagesURL}/spinner.gif" /></div>
       <div><!-- this is where the error message goes --></div>
 
-      <h2>${%Redundant Labels}</h2>
+      <h2>${%Redundant_Labels}</h2>
       <table class="pane sortable bigtable">
         <tr>
-          <th>Node name</th>
-          <th>Redundant labels</th>
+          <th>${%Node_name}</th>
+          <th>${%Redundant_labels}</th>
         </tr>
         <local:redundantLabels node="${app}"/>
         <j:forEach var="node" items="${app.nodes}">
