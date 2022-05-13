@@ -27,7 +27,7 @@ THE SOFTWARE.
   <l:layout permission="${app.ADMINISTER}" title="${it.displayName}">
     <l:side-panel>
       <l:tasks>
-        <l:task icon="icon-gear2 icon-md" href="${rootURL}/manage" title="${%Manage Jenkins}" permission="${app.ADMINISTER}" />
+        <l:task icon="icon-gear2 icon-md" href="${rootURL}/manage" title="${%Manage_Jenkins}" permission="${app.ADMINISTER}" />
         <l:task icon="icon-up icon-md" href="." title="${it.displayName}" permission="${app.ADMINISTER}" />
       </l:tasks>
       <t:executors computers="${h.singletonList(it)}" />
@@ -38,7 +38,7 @@ THE SOFTWARE.
 
       <f:form method="post" action="configSubmit">
         <f:entry>
-          <f:repeatable var="impl" items="${it.implications()}" add="${%New Implication}">
+          <f:repeatable var="impl" items="${it.implications()}" add="${%New_Implication}">
             <table width="100%" class="bigtable">
               <f:entry>
                 <label>${%Labels}<f:textbox value="${impl.atomsString()}" field="atoms" style="width: 30%" autoCompleteDelimChar=" " autoCompleteUrl="${rootURL}/label-implications/autoCompleteLabels"/></label>
