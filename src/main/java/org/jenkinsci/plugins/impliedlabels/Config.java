@@ -90,12 +90,12 @@ public class Config extends ManagementLink {
     }
 
     public String getDisplayName() {
-        return Messages.DisplayName();
+        return Messages.displayName();
     }
 
     @Override
     public String getDescription() {
-        return Messages.Infer_redundant_labels();
+        return Messages.infer_redundant_labels();
     }
 
     @Override
@@ -227,7 +227,7 @@ public class Config extends ManagementLink {
             Label.parseExpression(expression);
         } catch (ANTLRException ex) {
 
-            return FormValidation.error(ex, Messages.Invalid_label_expression());
+            return FormValidation.error(ex, Messages.invalid_label_expression());
         }
 // since 1.544
 //        return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
@@ -247,9 +247,9 @@ public class Config extends ManagementLink {
 
         labels.removeAll(Label.parse(labelString));
 
-        if (labels.isEmpty()) return FormValidation.ok(Messages.No_labels_inferred());
+        if (labels.isEmpty()) return FormValidation.ok(Messages.no_labels_inferred());
 
-        return FormValidation.ok(Messages.Inferred_labels(Util.join(labels, " ")));
+        return FormValidation.ok(Messages.inferred_labels(Util.join(labels, " ")));
     }
 
     @Restricted(NoExternalUse.class)
