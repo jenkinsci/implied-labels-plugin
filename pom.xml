@@ -39,6 +39,13 @@
       <version>2.2</version>
       <scope>test</scope>
     </dependency>
+    <!-- Required for Java 17 Javadoc generation -->
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <version>3.0.2</version>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
