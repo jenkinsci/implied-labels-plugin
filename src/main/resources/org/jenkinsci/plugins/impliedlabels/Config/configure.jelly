@@ -30,7 +30,7 @@ THE SOFTWARE.
         <l:task icon="icon-gear2 icon-md" href="${rootURL}/manage" title="${%Manage_Jenkins}" permission="${app.ADMINISTER}" />
         <l:task icon="icon-up icon-md" href="." title="${it.displayName}" permission="${app.ADMINISTER}" />
       </l:tasks>
-      <t:executors computers="${h.singletonList(it)}" />
+      <t:executors computers="${[it]}"/>
     </l:side-panel>
 
     <l:main-panel>
