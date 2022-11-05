@@ -34,12 +34,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest</artifactId>
-      <version>2.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
       <scope>test</scope>
@@ -65,8 +59,5 @@
     <changelist>-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/implied-labels-plugin</gitHubRepo>
     <jenkins.version>2.346.3</jenkins.version>
-
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <surefire.useFile>false</surefire.useFile>
   </properties>
 </project>
