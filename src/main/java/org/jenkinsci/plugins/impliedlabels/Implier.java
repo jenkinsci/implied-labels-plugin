@@ -23,13 +23,11 @@
  */
 package org.jenkinsci.plugins.impliedlabels;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.LabelFinder;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
-
 import java.util.Collection;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author ogondza

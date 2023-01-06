@@ -23,18 +23,19 @@
  */
 package org.jenkinsci.plugins.impliedlabels;
 
+import antlr.ANTLRException;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.CopyOnWrite;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AutoCompletionCandidates;
+import hudson.model.Label;
 import hudson.model.LabelFinder;
 import hudson.model.ManagementLink;
-import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.FormValidation;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -45,20 +46,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import net.jcip.annotations.GuardedBy;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
-
 import jenkins.model.Jenkins;
-
+import net.jcip.annotations.GuardedBy;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import antlr.ANTLRException;
 import org.kohsuke.stapler.verb.POST;
 
 @Restricted(NoExternalUse.class)
@@ -66,14 +61,16 @@ public class Config extends ManagementLink {
 
     private static final @NonNull Logger CACHE_LOGGER = Logger.getLogger("ConfigCaching");
 
-    /**
-     * Topologically sorted implications.
-     */
-    @GuardedBy("configLock") @CopyOnWrite
-    private @NonNull List<Implication> implications = Collections.emptyList();
+    /** Topologically sorted implications. */
     @GuardedBy("configLock")
-    transient private final @NonNull Map<Collection<LabelAtom>, Collection<LabelAtom>> cache = new HashMap<>();
-    final transient private Object configLock = new Object();
+    @CopyOnWrite
+    private @NonNull List<Implication> implications = Collections.emptyList();
+
+    @GuardedBy("configLock")
+    private final transient @NonNull Map<Collection<LabelAtom>, Collection<LabelAtom>> cache =
+            new HashMap<>();
+
+    private final transient Object configLock = new Object();
 
     public Config() {
         try {
@@ -109,15 +106,16 @@ public class Config extends ManagementLink {
     }
 
     @POST
-    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp)
+            throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        this.implications(req.bindJSONToList(
-                Implication.class, req.getSubmittedForm().get("impl")
-        ));
+        this.implications(
+                req.bindJSONToList(Implication.class, req.getSubmittedForm().get("impl")));
         rsp.sendRedirect("");
     }
 
-    /*package*/ void implications(@NonNull Collection<Implication> implications) throws IOException {
+    /*package*/ void implications(@NonNull Collection<Implication> implications)
+            throws IOException {
         List<Implication> im;
         try {
             im = Collections.unmodifiableList(Implication.sort(implications));
@@ -149,7 +147,7 @@ public class Config extends ManagementLink {
 
         if (labels == null) {
             labels = new HashSet<>(initial);
-            for(Implication i: implications()) {
+            for (Implication i : implications()) {
                 labels.addAll(i.infer(labels));
             }
 
@@ -175,20 +173,21 @@ public class Config extends ManagementLink {
             // Filter out any bad(null) results from plugins
             // for compatibility reasons, findLabels may return LabelExpression and not atom.
             for (Label label : labeler.findLabels(node))
-                if (label instanceof LabelAtom) result.add((LabelAtom)label);
+                if (label instanceof LabelAtom) result.add((LabelAtom) label);
         }
         return result;
     }
 
     /**
-     * Get list of configured labels that are explicitly declared but can be inferred using current implications
+     * Get list of configured labels that are explicitly declared but can be inferred using current
+     * implications
      */
     public @NonNull Collection<LabelAtom> detectRedundantLabels(@NonNull Node node) {
         final @NonNull Set<LabelAtom> initial = initialLabels(node);
         final @NonNull Set<LabelAtom> infered = new HashSet<>();
         final @NonNull Set<LabelAtom> accumulated = new HashSet<>(initial);
 
-        for(Implication i: implications()) {
+        for (Implication i : implications()) {
             Collection<LabelAtom> ii = i.infer(accumulated);
             infered.addAll(ii);
             accumulated.addAll(ii);
@@ -199,10 +198,7 @@ public class Config extends ManagementLink {
     }
 
     private XmlFile getConfigFile() {
-        final File file = new File(
-                Jenkins.get().root,
-                getClass().getCanonicalName() + ".xml"
-        );
+        final File file = new File(Jenkins.get().root, getClass().getCanonicalName() + ".xml");
         return new XmlFile(Jenkins.XSTREAM, file);
     }
 
@@ -212,7 +208,7 @@ public class Config extends ManagementLink {
 
     private void load() throws IOException {
         final XmlFile file = getConfigFile();
-        if(file.exists()) {
+        if (file.exists()) {
             file.unmarshal(this);
         }
     }
@@ -229,10 +225,10 @@ public class Config extends ManagementLink {
 
             return FormValidation.error(ex, Messages.invalid_label_expression());
         }
-// since 1.544
-//        return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
-//                j.getRootUrl(), l.getUrl(), l.getNodes().size() + l.getClouds().size()
-//        ));
+        // since 1.544
+        //        return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
+        //                j.getRootUrl(), l.getUrl(), l.getNodes().size() + l.getClouds().size()
+        //        ));
         return FormValidation.ok();
     }
 
@@ -241,7 +237,7 @@ public class Config extends ManagementLink {
         if (Util.fixEmpty(labelString) == null) return FormValidation.ok();
 
         final @NonNull Set<LabelAtom> labels = Label.parse(labelString);
-        for(Implication i: implications()) {
+        for (Implication i : implications()) {
             labels.addAll(i.infer(labels));
         }
 
@@ -256,13 +252,13 @@ public class Config extends ManagementLink {
     public AutoCompletionCandidates doAutoCompleteLabels(@QueryParameter String value) {
         AutoCompletionCandidates candidates = new AutoCompletionCandidates();
 
-        for (LabelAtom atom: Jenkins.get().getLabelAtoms()) {
+        for (LabelAtom atom : Jenkins.get().getLabelAtoms()) {
             if (atom.getName().startsWith(value)) {
                 candidates.add(atom.getName());
             }
         }
-        for(Implication i: implications()) {
-            for (LabelAtom atom: i.atoms()) {
+        for (Implication i : implications()) {
+            for (LabelAtom atom : i.atoms()) {
                 if (atom.getName().startsWith(value)) {
                     candidates.add(atom.getName());
                 }

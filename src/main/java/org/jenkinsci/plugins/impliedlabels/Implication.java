@@ -23,27 +23,23 @@
  */
 package org.jenkinsci.plugins.impliedlabels;
 
+import antlr.ANTLRException;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.model.Label;
 import hudson.model.labels.LabelAtom;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import antlr.ANTLRException;
 
 @Restricted(NoExternalUse.class)
 public class Implication {
@@ -88,10 +84,7 @@ public class Implication {
     }
 
     public @NonNull Collection<LabelAtom> infer(@NonNull Collection<LabelAtom> atoms) {
-        return expression != null && expression.matches(atoms)
-                ? this.atoms
-                : NO_ATOMS
-        ;
+        return expression != null && expression.matches(atoms) ? this.atoms : NO_ATOMS;
     }
 
     @Override
@@ -116,7 +109,8 @@ public class Implication {
         return Objects.equals(expression, other.expression);
     }
 
-    /*package*/ static @NonNull List<Implication> sort(final @NonNull Collection<Implication> implications) throws CycleDetectedException {
+    /*package*/ static @NonNull List<Implication> sort(
+            final @NonNull Collection<Implication> implications) throws CycleDetectedException {
         CyclicGraphDetector<Implication> sorter = new ImplicationSorter(implications);
 
         sorter.run(implications);
@@ -135,7 +129,7 @@ public class Implication {
             List<Implication> edges = new ArrayList<>();
             if (current.expression == null) return edges;
 
-            for (Implication i: implications) {
+            for (Implication i : implications) {
                 if (i == current) continue;
                 if (i.expression == null) continue;
 
