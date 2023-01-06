@@ -23,10 +23,9 @@
  */
 package org.jenkinsci.plugins.impliedlabels;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Plugin;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 public class ImpliedLabelsPlugin extends Plugin {
 

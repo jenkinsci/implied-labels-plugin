@@ -27,12 +27,12 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertEquals;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.AutoCompletionCandidates;
@@ -42,7 +42,6 @@ import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.DumbSlave;
 import hudson.util.FormValidation;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,9 +52,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import jenkins.model.Jenkins;
-
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
@@ -65,8 +62,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 public class ConfigTest {
 
@@ -78,55 +73,66 @@ public class ConfigTest {
     private List<Implication> implications;
     private String controllerLabel;
 
-    @Before public void setUp() throws IOException {
+    @Before
+    public void setUp() throws IOException {
         config = ImpliedLabelsPlugin.config;
-        implications = Arrays.asList(
-                new Implication("rhel64 || rhel65", "rhel6"),
-                new Implication("rhel4 || rhel5 || rhel6", "rhel"),
-                new Implication("fedora17 || fedora18", "fedora"),
-                new Implication("rhel || fedora", "linux"),
-                new Implication("||", "invalid")
-        );
+        implications =
+                Arrays.asList(
+                        new Implication("rhel64 || rhel65", "rhel6"),
+                        new Implication("rhel4 || rhel5 || rhel6", "rhel"),
+                        new Implication("fedora17 || fedora18", "fedora"),
+                        new Implication("rhel || fedora", "linux"),
+                        new Implication("||", "invalid"));
         config.implications(implications);
         controllerLabel = j.jenkins.get().getSelfLabel().getName();
     }
 
-    @Test public void roundtrip() {
+    @Test
+    public void roundtrip() {
         assertThat(config.implications(), sameMembers(implications));
 
         assertThat(new Config().implications(), sameMembers(implications));
     }
 
-    @Test public void evaluate() throws IOException {
+    @Test
+    public void evaluate() throws IOException {
         j.jenkins.setLabelString("rhel65");
 
         config.evaluate(j.jenkins);
 
-        assertThat(j.jenkins.getLabelAtoms(), sameMembers(labels("rhel65", "rhel6", "rhel", "linux", controllerLabel)));
+        assertThat(
+                j.jenkins.getLabelAtoms(),
+                sameMembers(labels("rhel65", "rhel6", "rhel", "linux", controllerLabel)));
     }
 
-    @Test public void evaluateInAnyOrder() throws IOException {
+    @Test
+    public void evaluateInAnyOrder() throws IOException {
         j.jenkins.setLabelString("rhel65");
 
         Collections.reverse(implications);
         config.implications(implications);
         config.evaluate(j.jenkins);
 
-        assertThat(j.jenkins.getLabelAtoms(), sameMembers(labels("rhel65", "rhel6", "rhel", "linux", controllerLabel)));
+        assertThat(
+                j.jenkins.getLabelAtoms(),
+                sameMembers(labels("rhel65", "rhel6", "rhel", "linux", controllerLabel)));
     }
 
-    @Test public void considerLabelsContributedByOtherLabelFinders() throws IOException {
+    @Test
+    public void considerLabelsContributedByOtherLabelFinders() throws IOException {
         j.jenkins.setLabelString("configured");
-        config.implications(Collections.singletonList(
-                new Implication("configured && contributed && " + controllerLabel, "final")
-        ));
+        config.implications(
+                Collections.singletonList(
+                        new Implication(
+                                "configured && contributed && " + controllerLabel, "final")));
 
         assertThat(j.jenkins.getLabels(), hasItem(label("final")));
     }
 
-    @Extension//@TestExtension("considerLabelsContributedByOtherLabelFinders")
+    @Extension // @TestExtension("considerLabelsContributedByOtherLabelFinders")
     public static class TestLabelFinder extends LabelFinder {
-        @Override public Collection<LabelAtom> findLabels(Node node) {
+        @Override
+        public Collection<LabelAtom> findLabels(Node node) {
             // @TestExtension does not seem to work using JenkinsRule
             if (!node.getLabelString().contains("configured")) return Collections.emptyList();
 
@@ -140,22 +146,26 @@ public class ConfigTest {
 
     private static Set<LabelAtom> labels(String... names) {
         HashSet<LabelAtom> labels = new HashSet<>(names.length);
-        for (String name: names) {
+        for (String name : names) {
             labels.add(label(name));
         }
         return labels;
     }
 
-    @Test public void validateExpression() {
+    @Test
+    public void validateExpression() {
         assertThat(config.doCheckExpression(""), equalTo(FormValidation.ok()));
         assertThat(config.doCheckExpression(controllerLabel), equalTo(FormValidation.ok()));
         assertThat(config.doCheckExpression("!" + controllerLabel), equalTo(FormValidation.ok()));
 
-        assertThat(config.doCheckExpression("!||&&").getMessage(), containsString("Invalid label expression"));
+        assertThat(
+                config.doCheckExpression("!||&&").getMessage(),
+                containsString("Invalid label expression"));
     }
 
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
-    @Test public void notAuthorizedToRead() throws Exception {
+    @Test
+    public void notAuthorizedToRead() throws Exception {
         WebClient wc = j.createWebClient();
 
         try {
@@ -167,7 +177,8 @@ public class ConfigTest {
     }
 
     @PresetData(DataSet.ANONYMOUS_READONLY)
-    @Test public void notAuthorizedToConfigure() throws Exception {
+    @Test
+    public void notAuthorizedToConfigure() throws Exception {
         WebClient wc = j.createWebClient();
         wc.getOptions().setPrintContentOnFailingStatusCode(false);
 
@@ -184,7 +195,8 @@ public class ConfigTest {
         }
     }
 
-    @Test public void detectRedundant() throws IOException {
+    @Test
+    public void detectRedundant() throws IOException {
         j.jenkins.setLabelString("rhel65");
         assertThat(config.detectRedundantLabels(j.jenkins), this.sameMembers());
 
@@ -221,7 +233,8 @@ public class ConfigTest {
         }
     }
 
-    @Test public void cacheImpliedLabels() throws Exception {
+    @Test
+    public void cacheImpliedLabels() throws Exception {
         TrackingImplication tracker = new TrackingImplication();
         ArrayList<Implication> impls = new ArrayList<>(implications);
         impls.add(tracker);
@@ -234,50 +247,67 @@ public class ConfigTest {
         DumbSlave r6x = j.createSlave("r6x", "rhel6 something_extra", NO_ENV);
 
         for (int i = 0; i < 3; i++) {
-            assertThat(config.evaluate(f1), sameMembers(labels("fedora17", "fedora", "linux", "f1")));
-            assertThat(config.evaluate(f2), sameMembers(labels("fedora17", "fedora", "linux", "f2")));
+            assertThat(
+                    config.evaluate(f1), sameMembers(labels("fedora17", "fedora", "linux", "f1")));
+            assertThat(
+                    config.evaluate(f2), sameMembers(labels("fedora17", "fedora", "linux", "f2")));
             assertThat(config.evaluate(r6), sameMembers(labels("rhel6", "rhel", "linux", "r6")));
-            assertThat(config.evaluate(r6x), sameMembers(labels("rhel6", "rhel", "linux", "something_extra", "r6x")));
+            assertThat(
+                    config.evaluate(r6x),
+                    sameMembers(labels("rhel6", "rhel", "linux", "something_extra", "r6x")));
         }
 
         config.implications(impls);
         tracker.clear();
 
         for (int i = 0; i < 3; i++) {
-            assertThat(config.evaluate(f1), sameMembers(labels("fedora17", "fedora", "linux", "f1")));
-            assertThat(config.evaluate(f2), sameMembers(labels("fedora17", "fedora", "linux", "f2")));
+            assertThat(
+                    config.evaluate(f1), sameMembers(labels("fedora17", "fedora", "linux", "f1")));
+            assertThat(
+                    config.evaluate(f2), sameMembers(labels("fedora17", "fedora", "linux", "f2")));
             assertThat(config.evaluate(r6), sameMembers(labels("rhel6", "rhel", "linux", "r6")));
-            assertThat(config.evaluate(r6x), sameMembers(labels("rhel6", "rhel", "linux", "something_extra", "r6x")));
+            assertThat(
+                    config.evaluate(r6x),
+                    sameMembers(labels("rhel6", "rhel", "linux", "something_extra", "r6x")));
         }
     }
 
-    @Test public void testManagementCategory() {
+    @Test
+    public void testManagementCategory() {
         assertThat(config.getCategory(), is(ManagementLink.Category.CONFIGURATION));
     }
 
-    @Test public void testDescription() {
-        assertThat(config.getDescription(), is("Infer redundant labels automatically based on user declaration"));
+    @Test
+    public void testDescription() {
+        assertThat(
+                config.getDescription(),
+                is("Infer redundant labels automatically based on user declaration"));
     }
 
-    @Test public void testIconFileName() {
-        assertThat(config.getIconFileName(), is("/plugin/implied-labels/icons/48x48/attribute.png"));
+    @Test
+    public void testIconFileName() {
+        assertThat(
+                config.getIconFileName(), is("/plugin/implied-labels/icons/48x48/attribute.png"));
     }
 
-    @Test public void testAutoCompleteLabels() {
+    @Test
+    public void testAutoCompleteLabels() {
         /* Prefix substring of controller label should autocomplete to full controller label */
         String controllerLabelPrefix = controllerLabel.substring(0, 4);
         AutoCompletionCandidates candidates = config.doAutoCompleteLabels(controllerLabelPrefix);
         assertThat(candidates.getValues(), hasItem(controllerLabel));
     }
 
-    @Test public void testAutoCompleteLabels_Invalid() {
+    @Test
+    public void testAutoCompleteLabels_Invalid() {
         /* Invalid prefix should not autocomplete */
         String invalidPrefix = "invalid-prefix-for-auto-complete";
         AutoCompletionCandidates candidates = config.doAutoCompleteLabels(invalidPrefix);
         assertThat(candidates.getValues(), is(empty()));
     }
 
-    @Test public void testAutoCompleteLabels_Implication() {
+    @Test
+    public void testAutoCompleteLabels_Implication() {
         /* Implication should autocomplete */
         String impliedLabelPrefix = "fed";
         AutoCompletionCandidates candidates = config.doAutoCompleteLabels(impliedLabelPrefix);
@@ -291,7 +321,8 @@ public class ConfigTest {
             super("", "");
         }
 
-        @NonNull @Override // Infer nothing
+        @NonNull
+        @Override // Infer nothing
         public Collection<LabelAtom> infer(@NonNull Collection<LabelAtom> atoms) {
             synchronized (log) {
                 Throwable where = log.get(atoms);

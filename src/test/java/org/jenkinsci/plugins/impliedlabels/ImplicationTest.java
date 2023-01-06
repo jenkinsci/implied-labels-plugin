@@ -25,14 +25,12 @@ package org.jenkinsci.plugins.impliedlabels;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import hudson.model.labels.LabelAtom;
 
+import hudson.model.labels.LabelAtom;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
-
 import jenkins.model.Jenkins;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
