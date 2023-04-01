@@ -67,7 +67,8 @@ public class ConfigTest {
 
     private static final EnvVars NO_ENV = new EnvVars();
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
     private Config config;
     private List<Implication> implications;
@@ -76,13 +77,12 @@ public class ConfigTest {
     @Before
     public void setUp() throws IOException {
         config = ImpliedLabelsPlugin.config;
-        implications =
-                Arrays.asList(
-                        new Implication("rhel64 || rhel65", "rhel6"),
-                        new Implication("rhel4 || rhel5 || rhel6", "rhel"),
-                        new Implication("fedora17 || fedora18", "fedora"),
-                        new Implication("rhel || fedora", "linux"),
-                        new Implication("||", "invalid"));
+        implications = Arrays.asList(
+                new Implication("rhel64 || rhel65", "rhel6"),
+                new Implication("rhel4 || rhel5 || rhel6", "rhel"),
+                new Implication("fedora17 || fedora18", "fedora"),
+                new Implication("rhel || fedora", "linux"),
+                new Implication("||", "invalid"));
         config.implications(implications);
         controllerLabel = j.jenkins.get().getSelfLabel().getName();
     }
@@ -100,9 +100,7 @@ public class ConfigTest {
 
         config.evaluate(j.jenkins);
 
-        assertThat(
-                j.jenkins.getLabelAtoms(),
-                sameMembers(labels("rhel65", "rhel6", "rhel", "linux", controllerLabel)));
+        assertThat(j.jenkins.getLabelAtoms(), sameMembers(labels("rhel65", "rhel6", "rhel", "linux", controllerLabel)));
     }
 
     @Test
@@ -113,18 +111,14 @@ public class ConfigTest {
         config.implications(implications);
         config.evaluate(j.jenkins);
 
-        assertThat(
-                j.jenkins.getLabelAtoms(),
-                sameMembers(labels("rhel65", "rhel6", "rhel", "linux", controllerLabel)));
+        assertThat(j.jenkins.getLabelAtoms(), sameMembers(labels("rhel65", "rhel6", "rhel", "linux", controllerLabel)));
     }
 
     @Test
     public void considerLabelsContributedByOtherLabelFinders() throws IOException {
         j.jenkins.setLabelString("configured");
         config.implications(
-                Collections.singletonList(
-                        new Implication(
-                                "configured && contributed && " + controllerLabel, "final")));
+                Collections.singletonList(new Implication("configured && contributed && " + controllerLabel, "final")));
 
         assertThat(j.jenkins.getLabels(), hasItem(label("final")));
     }
@@ -158,9 +152,7 @@ public class ConfigTest {
         assertThat(config.doCheckExpression(controllerLabel), equalTo(FormValidation.ok()));
         assertThat(config.doCheckExpression("!" + controllerLabel), equalTo(FormValidation.ok()));
 
-        assertThat(
-                config.doCheckExpression("!||&&").getMessage(),
-                containsString("Invalid label expression"));
+        assertThat(config.doCheckExpression("!||&&").getMessage(), containsString("Invalid label expression"));
     }
 
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
@@ -247,28 +239,20 @@ public class ConfigTest {
         DumbSlave r6x = j.createSlave("r6x", "rhel6 something_extra", NO_ENV);
 
         for (int i = 0; i < 3; i++) {
-            assertThat(
-                    config.evaluate(f1), sameMembers(labels("fedora17", "fedora", "linux", "f1")));
-            assertThat(
-                    config.evaluate(f2), sameMembers(labels("fedora17", "fedora", "linux", "f2")));
+            assertThat(config.evaluate(f1), sameMembers(labels("fedora17", "fedora", "linux", "f1")));
+            assertThat(config.evaluate(f2), sameMembers(labels("fedora17", "fedora", "linux", "f2")));
             assertThat(config.evaluate(r6), sameMembers(labels("rhel6", "rhel", "linux", "r6")));
-            assertThat(
-                    config.evaluate(r6x),
-                    sameMembers(labels("rhel6", "rhel", "linux", "something_extra", "r6x")));
+            assertThat(config.evaluate(r6x), sameMembers(labels("rhel6", "rhel", "linux", "something_extra", "r6x")));
         }
 
         config.implications(impls);
         tracker.clear();
 
         for (int i = 0; i < 3; i++) {
-            assertThat(
-                    config.evaluate(f1), sameMembers(labels("fedora17", "fedora", "linux", "f1")));
-            assertThat(
-                    config.evaluate(f2), sameMembers(labels("fedora17", "fedora", "linux", "f2")));
+            assertThat(config.evaluate(f1), sameMembers(labels("fedora17", "fedora", "linux", "f1")));
+            assertThat(config.evaluate(f2), sameMembers(labels("fedora17", "fedora", "linux", "f2")));
             assertThat(config.evaluate(r6), sameMembers(labels("rhel6", "rhel", "linux", "r6")));
-            assertThat(
-                    config.evaluate(r6x),
-                    sameMembers(labels("rhel6", "rhel", "linux", "something_extra", "r6x")));
+            assertThat(config.evaluate(r6x), sameMembers(labels("rhel6", "rhel", "linux", "something_extra", "r6x")));
         }
     }
 
@@ -279,15 +263,12 @@ public class ConfigTest {
 
     @Test
     public void testDescription() {
-        assertThat(
-                config.getDescription(),
-                is("Infer redundant labels automatically based on user declaration"));
+        assertThat(config.getDescription(), is("Infer redundant labels automatically based on user declaration"));
     }
 
     @Test
     public void testIconFileName() {
-        assertThat(
-                config.getIconFileName(), is("/plugin/implied-labels/icons/48x48/attribute.png"));
+        assertThat(config.getIconFileName(), is("/plugin/implied-labels/icons/48x48/attribute.png"));
     }
 
     @Test

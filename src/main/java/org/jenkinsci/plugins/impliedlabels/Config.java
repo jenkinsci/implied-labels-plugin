@@ -67,8 +67,7 @@ public class Config extends ManagementLink {
     private @NonNull List<Implication> implications = Collections.emptyList();
 
     @GuardedBy("configLock")
-    private final transient @NonNull Map<Collection<LabelAtom>, Collection<LabelAtom>> cache =
-            new HashMap<>();
+    private final transient @NonNull Map<Collection<LabelAtom>, Collection<LabelAtom>> cache = new HashMap<>();
 
     private final transient Object configLock = new Object();
 
@@ -106,16 +105,14 @@ public class Config extends ManagementLink {
     }
 
     @POST
-    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp)
-            throws IOException, ServletException {
+    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         this.implications(
                 req.bindJSONToList(Implication.class, req.getSubmittedForm().get("impl")));
         rsp.sendRedirect("");
     }
 
-    /*package*/ void implications(@NonNull Collection<Implication> implications)
-            throws IOException {
+    /*package*/ void implications(@NonNull Collection<Implication> implications) throws IOException {
         List<Implication> im;
         try {
             im = Collections.unmodifiableList(Implication.sort(implications));
@@ -172,8 +169,7 @@ public class Config extends ManagementLink {
             if (labeler instanceof Implier) continue; // skip Implier
             // Filter out any bad(null) results from plugins
             // for compatibility reasons, findLabels may return LabelExpression and not atom.
-            for (Label label : labeler.findLabels(node))
-                if (label instanceof LabelAtom) result.add((LabelAtom) label);
+            for (Label label : labeler.findLabels(node)) if (label instanceof LabelAtom) result.add((LabelAtom) label);
         }
         return result;
     }
