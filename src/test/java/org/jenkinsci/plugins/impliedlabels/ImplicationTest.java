@@ -37,7 +37,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 public class ImplicationTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
     @Test
     public void valid() throws IOException {

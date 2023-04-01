@@ -29,6 +29,9 @@ import hudson.Plugin;
 
 public class ImpliedLabelsPlugin extends Plugin {
 
-    @Extension public static final @NonNull Config config = new Config();
-    @Extension public static final @NonNull Implier implier = new Implier(config);
+    @Extension
+    public static final @NonNull Config config = new Config();
+
+    @Extension
+    public static final @NonNull Implier implier = new Implier(config);
 }

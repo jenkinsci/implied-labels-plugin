@@ -109,8 +109,8 @@ public class Implication {
         return Objects.equals(expression, other.expression);
     }
 
-    /*package*/ static @NonNull List<Implication> sort(
-            final @NonNull Collection<Implication> implications) throws CycleDetectedException {
+    /*package*/ static @NonNull List<Implication> sort(final @NonNull Collection<Implication> implications)
+            throws CycleDetectedException {
         CyclicGraphDetector<Implication> sorter = new ImplicationSorter(implications);
 
         sorter.run(implications);
