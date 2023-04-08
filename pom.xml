@@ -34,6 +34,8 @@
     <gitHubRepo>jenkinsci/implied-labels-plugin</gitHubRepo>
     <jenkins.version>2.361.4</jenkins.version>
     <revision>0.12</revision>
+    <spotbugs.effort>Max</spotbugs.effort>
+    <spotbugs.threshold>Low</spotbugs.threshold>
   </properties>
 
   <dependencyManagement>
