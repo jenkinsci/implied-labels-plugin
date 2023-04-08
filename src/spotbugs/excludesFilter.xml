@@ -5,8 +5,8 @@
     false positives.
   -->
   <Match>
-    <Bug pattern="MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR"/>
-    <Class name="org.jenkinsci.plugins.impliedlabels.Config"/>
+    <Bug pattern="MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR" />
+    <Class name="org.jenkinsci.plugins.impliedlabels.Config" />
   </Match>
 
   <!--
