@@ -31,7 +31,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -55,6 +54,7 @@ import java.util.Set;
 import jenkins.model.Jenkins;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
+import org.htmlunit.FailingHttpStatusCodeException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
