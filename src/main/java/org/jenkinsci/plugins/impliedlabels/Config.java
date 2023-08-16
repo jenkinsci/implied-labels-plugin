@@ -25,7 +25,9 @@ package org.jenkinsci.plugins.impliedlabels;
 
 import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.CopyOnWrite;
+import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.AutoCompletionCandidates;
@@ -57,6 +59,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.verb.POST;
 
 @Restricted(NoExternalUse.class)
+@Extension
 public class Config extends ManagementLink {
 
     private static final @NonNull Logger CACHE_LOGGER = Logger.getLogger("ConfigCaching");
@@ -71,6 +74,7 @@ public class Config extends ManagementLink {
 
     private final transient Object configLock = new Object();
 
+    @SuppressFBWarnings("MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR")
     public Config() {
         try {
             load();
@@ -193,16 +197,16 @@ public class Config extends ManagementLink {
         return infered;
     }
 
-    private XmlFile getConfigFile() {
+    XmlFile getConfigFile() {
         final File file = new File(Jenkins.get().root, getClass().getCanonicalName() + ".xml");
         return new XmlFile(Jenkins.XSTREAM, file);
     }
 
-    private void save() throws IOException {
+    void save() throws IOException {
         getConfigFile().write(this);
     }
 
-    private void load() throws IOException {
+    void load() throws IOException {
         final XmlFile file = getConfigFile();
         if (file.exists()) {
             file.unmarshal(this);

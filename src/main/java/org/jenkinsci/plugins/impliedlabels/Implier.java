@@ -23,25 +23,24 @@
  */
 package org.jenkinsci.plugins.impliedlabels;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
 import hudson.model.LabelFinder;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import java.util.Collection;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * @author ogondza
  */
-/*package*/ class Implier extends LabelFinder {
-
-    private final @NonNull Config config;
-
-    public Implier(@NonNull Config config) {
-        this.config = config;
-    }
+@Extension
+@Restricted(NoExternalUse.class)
+public class Implier extends LabelFinder {
 
     @Override
     public Collection<LabelAtom> findLabels(Node node) {
+        Config config = ImpliedLabelsPlugin.get().getConfig();
         if (node == null) throw new NullPointerException();
         return config.evaluate(node);
     }

@@ -76,7 +76,7 @@ public class ConfigTest {
 
     @Before
     public void setUp() throws IOException {
-        config = ImpliedLabelsPlugin.config;
+        config = ImpliedLabelsPlugin.get().getConfig();
         implications = Arrays.asList(
                 new Implication("rhel64 || rhel65", "rhel6"),
                 new Implication("rhel4 || rhel5 || rhel6", "rhel"),

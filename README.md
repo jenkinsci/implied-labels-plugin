@@ -25,3 +25,13 @@ labels from *atom list*. Labels contributed from the Implied Labels Plugin
 are dynamic labels and thus not saved in configuration. Implications are
 evaluated in topological order so implication expressions can refer to
 labels contributed by other implications.
+
+## Configuration as code
+
+```
+unclassified:
+  impliedLabels:
+    implications:
+    - atoms: "linux"
+      expression: "Ubuntu || Centos"
+```

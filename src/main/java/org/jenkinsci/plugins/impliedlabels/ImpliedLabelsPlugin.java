@@ -23,15 +23,64 @@
  */
 package org.jenkinsci.plugins.impliedlabels;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-import hudson.Plugin;
+import hudson.XmlFile;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
+import org.jenkinsci.plugins.impliedlabels.Implication.ImplicationWrapper;
+import org.kohsuke.stapler.StaplerRequest;
 
-public class ImpliedLabelsPlugin extends Plugin {
+@Extension
+@Symbol("impliedLabels")
+public class ImpliedLabelsPlugin extends GlobalConfiguration {
 
-    @Extension
-    public static final @NonNull Config config = new Config();
+    public static ImpliedLabelsPlugin get() {
+        return Jenkins.get().getExtensionList(ImpliedLabelsPlugin.class).get(0);
+    }
 
-    @Extension
-    public static final @NonNull Implier implier = new Implier(config);
+    @SuppressFBWarnings("MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR")
+    public ImpliedLabelsPlugin() {
+        load();
+    }
+
+    public Config getConfig() {
+        return Jenkins.get().getExtensionList(Config.class).get(0);
+    }
+
+    @Override
+    protected XmlFile getConfigFile() {
+        return getConfig().getConfigFile();
+    }
+
+    public void setImplications(List<ImplicationWrapper> implications) {
+        try {
+            this.getConfig()
+                    .implications(implications.stream()
+                            .map(p -> new Implication(p.getExpression(), p.getAtoms()))
+                            .collect(Collectors.toList()));
+        } catch (IOException e) {
+
+        }
+    }
+
+    public List<ImplicationWrapper> getImplications() {
+        return this.getConfig().implications().stream()
+                .map(i -> new ImplicationWrapper(i.expressionString(), i.atomsString()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean configure(StaplerRequest req, JSONObject jsonObject) throws FormException {
+        setImplications(Collections.emptyList());
+        req.bindJSON(this, jsonObject);
+        save();
+        return false;
+    }
 }
