@@ -28,10 +28,13 @@ labels contributed by other implications.
 
 ## Configuration as code
 
+Defining implied labels with [configuration as code](https://plugins.jenkins.io/configuration-as-code/) can automate label definitions.
+The [platform labeler](https://plugins.jenkins.io/platformlabeler/) can automatically assign labels based on operating system properties and those operating system properties can be used to define more labels.
+
 ```
 unclassified:
   impliedLabels:
     implications:
     - atoms: "linux"
-      expression: "Ubuntu || Centos"
+      expression: "Ubuntu || CentOS || Debian || Rocky || openSUSE"
 ```
