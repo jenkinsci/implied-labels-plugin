@@ -1,0 +1,9 @@
+unclassified:
+  impliedLabels:
+    implications:
+    - atoms: "ubuntu1"
+      expression: "test1 || test2"
+    - atoms: "ubuntu2"
+      expression: "test3 || test4"
+    - atoms: "ubuntu3"
+      expression: "test5 || test6"

@@ -117,6 +117,33 @@ public class Implication {
         return sorter.getSorted();
     }
 
+    public static final class ImplicationWrapper {
+        private String expression;
+        private String atoms;
+
+        @DataBoundConstructor
+        public ImplicationWrapper(String expression, String atoms) {
+            this.expression = expression;
+            this.atoms = atoms;
+        }
+
+        public String getExpression() {
+            return expression;
+        }
+
+        public String getAtoms() {
+            return atoms;
+        }
+
+        public void setExpression(String expression) {
+            this.expression = expression;
+        }
+
+        public void setAtoms(String atoms) {
+            this.atoms = atoms;
+        }
+    }
+
     private static final class ImplicationSorter extends CyclicGraphDetector<Implication> {
         private final Collection<Implication> implications;
 
