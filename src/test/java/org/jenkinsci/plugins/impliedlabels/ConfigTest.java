@@ -268,7 +268,7 @@ public class ConfigTest {
 
     @Test
     public void testIconFileName() {
-        assertThat(config.getIconFileName(), is("/plugin/implied-labels/icons/48x48/attribute.png"));
+        assertThat(config.getIconFileName(), is("symbol-pricetags-outline plugin-ionicons-api"));
     }
 
     @Test

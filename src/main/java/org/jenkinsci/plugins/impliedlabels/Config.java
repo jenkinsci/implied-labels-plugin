@@ -100,7 +100,7 @@ public class Config extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "/plugin/implied-labels/icons/48x48/attribute.png";
+        return "symbol-pricetags-outline plugin-ionicons-api";
     }
 
     @Override
