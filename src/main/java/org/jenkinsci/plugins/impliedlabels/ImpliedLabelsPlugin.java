@@ -78,6 +78,10 @@ public class ImpliedLabelsPlugin extends GlobalConfiguration {
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject jsonObject) throws FormException {
+        // Ignore form submission from configure page ("impl" form) and only save JcasC object with 'impliedLabels'
+        if (jsonObject.containsKey("impl")) {
+            return false;
+        }
         setImplications(Collections.emptyList());
         req.bindJSON(this, jsonObject);
         save();
