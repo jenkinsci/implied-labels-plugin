@@ -59,12 +59,14 @@ THE SOFTWARE.
     <l:main-panel>
       <h1>${it.displayName}</h1>
 
-      <table class="pane sortable bigtable">
-        <tr>
-          <th>${%Inferred_labels}</th>
-          <th>${%Expression}</th>
-          <th>${%Size}</th>
-        </tr>
+      <table class="jenkins-table sortable">
+        <thead>
+          <tr>
+            <th initialSortDir="down">${%Inferred_labels}</th>
+            <th>${%Expression}</th>
+            <th>${%Size}</th>
+          </tr>
+        </thead>
         <j:forEach var="implication" items="${it.implications()}">
           <tr>
             <td><local:atoms atoms="${implication.atoms()}"/></td>
@@ -83,11 +85,13 @@ THE SOFTWARE.
       <div><!-- this is where the error message goes --></div>
 
       <h2>${%Redundant_Labels}</h2>
-      <table class="pane sortable bigtable">
-        <tr>
-          <th>${%Node_name}</th>
-          <th>${%Redundant_labels}</th>
-        </tr>
+      <table class="jenkins-table sortable">
+        <thead>
+          <tr>
+            <th initialSortDir="down">${%Node_name}</th>
+            <th>${%Redundant_labels}</th>
+          </tr>
+        </thead>
         <local:redundantLabels node="${app}"/>
         <j:forEach var="node" items="${app.nodes}">
           <local:redundantLabels node="${node}"/>
