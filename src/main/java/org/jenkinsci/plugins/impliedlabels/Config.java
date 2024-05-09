@@ -184,17 +184,17 @@ public class Config extends ManagementLink {
      */
     public @NonNull Collection<LabelAtom> detectRedundantLabels(@NonNull Node node) {
         final @NonNull Set<LabelAtom> initial = initialLabels(node);
-        final @NonNull Set<LabelAtom> infered = new HashSet<>();
+        final @NonNull Set<LabelAtom> inferred = new HashSet<>();
         final @NonNull Set<LabelAtom> accumulated = new HashSet<>(initial);
 
         for (Implication i : implications()) {
             Collection<LabelAtom> ii = i.infer(accumulated);
-            infered.addAll(ii);
+            inferred.addAll(ii);
             accumulated.addAll(ii);
         }
 
-        infered.retainAll(initial);
-        return infered;
+        inferred.retainAll(initial);
+        return inferred;
     }
 
     XmlFile getConfigFile() {
