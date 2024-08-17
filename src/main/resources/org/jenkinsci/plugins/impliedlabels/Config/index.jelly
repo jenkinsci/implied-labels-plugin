@@ -59,7 +59,7 @@ THE SOFTWARE.
     <l:main-panel>
       <h1>${it.displayName}</h1>
 
-      <table class="jenkins-table sortable">
+      <table class="jenkins-table sortable jenkins-!-margin-bottom-0">
         <thead>
           <tr>
             <th initialSortDir="down">${%Inferred_labels}</th>
@@ -75,14 +75,6 @@ THE SOFTWARE.
           </tr>
         </j:forEach>
       </table>
-
-      <h2>${%Test_implications}</h2>
-      <f:textbox name="labelString" autoCompleteDelimChar=" " autoCompleteUrl="${rootURL}/label-implications/autoCompleteLabels" />
-      <div style="float:right">
-        <input type="button" value="${%Test}" class="yui-button validate-button" onclick="validateButton('${rootURL}/label-implications/inferLabels/${method}','labelString',this)" />
-      </div>
-      <div style="display:none;"><l:progressAnimation/></div>
-      <div><!-- this is where the error message goes --></div>
 
       <h2>${%Redundant_Labels}</h2>
       <table class="jenkins-table sortable">
