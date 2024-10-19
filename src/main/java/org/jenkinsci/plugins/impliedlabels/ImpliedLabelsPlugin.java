@@ -35,7 +35,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.impliedlabels.Implication.ImplicationWrapper;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 @Extension
 @Symbol("impliedLabels")
@@ -77,7 +77,7 @@ public class ImpliedLabelsPlugin extends GlobalConfiguration {
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject jsonObject) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject jsonObject) throws FormException {
         // Ignore form submission from configure page ("impl" form) and only save JcasC object with 'impliedLabels'
         if (jsonObject.containsKey("impl")) {
             return false;

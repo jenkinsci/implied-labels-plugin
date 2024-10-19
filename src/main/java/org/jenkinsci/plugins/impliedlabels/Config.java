@@ -38,6 +38,7 @@ import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.FormValidation;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -48,14 +49,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.jcip.annotations.GuardedBy;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.POST;
 
 @Restricted(NoExternalUse.class)
@@ -109,7 +109,7 @@ public class Config extends ManagementLink {
     }
 
     @POST
-    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doConfigSubmit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         this.implications(
                 req.bindJSONToList(Implication.class, req.getSubmittedForm().get("impl")));
