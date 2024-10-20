@@ -173,7 +173,7 @@ public class Config extends ManagementLink {
             if (labeler instanceof Implier) continue; // skip Implier
             // Filter out any bad(null) results from plugins
             // for compatibility reasons, findLabels may return LabelExpression and not atom.
-            for (Label label : labeler.findLabels(node)) if (label instanceof LabelAtom) result.add((LabelAtom) label);
+            for (Label label : labeler.findLabels(node)) if (label instanceof LabelAtom atom) result.add(atom);
         }
         return result;
     }
