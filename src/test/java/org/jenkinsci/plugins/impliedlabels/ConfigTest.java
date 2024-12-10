@@ -60,8 +60,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.jvnet.hudson.test.recipes.PresetData;
-import org.jvnet.hudson.test.recipes.PresetData.DataSet;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 public class ConfigTest {
 
@@ -84,7 +83,7 @@ public class ConfigTest {
                 new Implication("rhel || fedora", "linux"),
                 new Implication("||", "invalid"));
         config.implications(implications);
-        controllerLabel = j.jenkins.get().getSelfLabel().getName();
+        controllerLabel = Jenkins.get().getSelfLabel().getName();
     }
 
     @Test
@@ -155,9 +154,13 @@ public class ConfigTest {
         assertThat(config.doCheckExpression("!||&&").getMessage(), containsString("Invalid label expression"));
     }
 
-    @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     @Test
     public void notAuthorizedToRead() throws Exception {
+        // Create a security realm that allows no read
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
+        j.jenkins.setAuthorizationStrategy(authorizationStrategy);
+
         WebClient wc = j.createWebClient();
 
         try {
@@ -168,11 +171,19 @@ public class ConfigTest {
         }
     }
 
-    @PresetData(DataSet.ANONYMOUS_READONLY)
     @Test
     public void notAuthorizedToConfigure() throws Exception {
+        // Create a security realm that only allows a-read-only-user to read
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
+        authorizationStrategy.grant(Jenkins.READ).everywhere().to("a-read-only-user");
+        j.jenkins.setAuthorizationStrategy(authorizationStrategy);
+
         WebClient wc = j.createWebClient();
         wc.getOptions().setPrintContentOnFailingStatusCode(false);
+
+        // Login as the user that can only read
+        wc.login("a-read-only-user");
 
         try {
             wc.goTo("label-implications");
@@ -215,6 +226,7 @@ public class ConfigTest {
             this.items = new HashSet<>(items);
         }
 
+        @Override
         public void describeTo(Description description) {
             description.appendText("Implies: " + items);
         }
