@@ -29,7 +29,6 @@ labels contributed by other implications.
 ## Configuration as code
 
 Label definitions can be automated with [configuration as code](https://plugins.jenkins.io/configuration-as-code/).
-The [platform labeler](https://plugins.jenkins.io/platformlabeler/) can automatically assign labels based on operating system properties and those operating system properties can be used to define more labels.
 
 ```
 unclassified:
