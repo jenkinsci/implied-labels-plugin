@@ -4,18 +4,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
 import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
+import io.jenkins.plugins.casc.misc.junit.jupiter.WithJenkinsConfiguredWithCode;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ConfigurationAsCodeTest {
-
-    @Rule
-    public JenkinsConfiguredWithCodeRule r = new JenkinsConfiguredWithCodeRule();
+@WithJenkinsConfiguredWithCode
+class ConfigurationAsCodeTest {
 
     @Test
     @ConfiguredWithCode("configuration-as-code.yml")
-    public void should_support_configuration_as_code() throws Exception {
+    void should_support_configuration_as_code(JenkinsConfiguredWithCodeRule r) {
         ImpliedLabelsPlugin plugin =
                 Jenkins.get().getExtensionList(ImpliedLabelsPlugin.class).get(0);
         assertEquals(3, plugin.getConfig().implications().size());

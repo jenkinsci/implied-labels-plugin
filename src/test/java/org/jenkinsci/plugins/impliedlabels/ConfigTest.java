@@ -29,7 +29,8 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
@@ -55,26 +56,27 @@ import jenkins.model.Jenkins;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.htmlunit.FailingHttpStatusCodeException;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class ConfigTest {
+@WithJenkins
+class ConfigTest {
 
     private static final EnvVars NO_ENV = new EnvVars();
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
     private Config config;
     private List<Implication> implications;
     private String controllerLabel;
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    void setUp(JenkinsRule j) throws IOException {
+        this.j = j;
         config = ImpliedLabelsPlugin.get().getConfig();
         implications = Arrays.asList(
                 new Implication("rhel64 || rhel65", "rhel6"),
@@ -87,14 +89,14 @@ public class ConfigTest {
     }
 
     @Test
-    public void roundtrip() {
+    void roundtrip() {
         assertThat(config.implications(), sameMembers(implications));
 
         assertThat(new Config().implications(), sameMembers(implications));
     }
 
     @Test
-    public void evaluate() throws IOException {
+    void evaluate() throws IOException {
         j.jenkins.setLabelString("rhel65");
 
         config.evaluate(j.jenkins);
@@ -103,7 +105,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void evaluateInAnyOrder() throws IOException {
+    void evaluateInAnyOrder() throws IOException {
         j.jenkins.setLabelString("rhel65");
 
         Collections.reverse(implications);
@@ -114,7 +116,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void considerLabelsContributedByOtherLabelFinders() throws IOException {
+    void considerLabelsContributedByOtherLabelFinders() throws IOException {
         j.jenkins.setLabelString("configured");
         config.implications(
                 Collections.singletonList(new Implication("configured && contributed && " + controllerLabel, "final")));
@@ -125,6 +127,7 @@ public class ConfigTest {
     @Extension // @TestExtension("considerLabelsContributedByOtherLabelFinders")
     public static class TestLabelFinder extends LabelFinder {
         @Override
+        @NonNull
         public Collection<LabelAtom> findLabels(Node node) {
             // @TestExtension does not seem to work using JenkinsRule
             if (!node.getLabelString().contains("configured")) return Collections.emptyList();
@@ -146,7 +149,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void validateExpression() {
+    void validateExpression() {
         assertThat(config.doCheckExpression(""), equalTo(FormValidation.ok()));
         assertThat(config.doCheckExpression(controllerLabel), equalTo(FormValidation.ok()));
         assertThat(config.doCheckExpression("!" + controllerLabel), equalTo(FormValidation.ok()));
@@ -155,66 +158,62 @@ public class ConfigTest {
     }
 
     @Test
-    public void notAuthorizedToRead() throws Exception {
+    void notAuthorizedToRead() {
         // Create a security realm that allows no read
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(authorizationStrategy);
 
-        WebClient wc = j.createWebClient();
-
-        try {
+        try (WebClient wc = j.createWebClient()) {
             wc.getOptions().setPrintContentOnFailingStatusCode(false);
-            wc.goTo("label-implications");
-        } catch (FailingHttpStatusCodeException ex) {
+            FailingHttpStatusCodeException ex =
+                    assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("label-implications"));
             assertThat(ex.getStatusMessage(), equalTo("Forbidden"));
         }
     }
 
     @Test
-    public void notAuthorizedToConfigure() throws Exception {
+    void notAuthorizedToConfigure() throws Exception {
         // Create a security realm that only allows a-read-only-user to read
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
         authorizationStrategy.grant(Jenkins.READ).everywhere().to("a-read-only-user");
         j.jenkins.setAuthorizationStrategy(authorizationStrategy);
 
-        WebClient wc = j.createWebClient();
-        wc.getOptions().setPrintContentOnFailingStatusCode(false);
+        try (WebClient wc = j.createWebClient()) {
+            wc.getOptions().setPrintContentOnFailingStatusCode(false);
 
-        // Login as the user that can only read
-        wc.login("a-read-only-user");
+            // Login as the user that can only read
+            wc.login("a-read-only-user");
 
-        try {
-            wc.goTo("label-implications");
-        } catch (FailingHttpStatusCodeException ex) {
-            assertThat(ex.getStatusMessage(), equalTo("Forbidden"));
-        }
+            FailingHttpStatusCodeException ex1 =
+                    assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("label-implications"));
+            assertThat(ex1.getStatusMessage(), equalTo("Forbidden"));
 
-        try {
-            wc.goTo("label-implications/configure");
-        } catch (FailingHttpStatusCodeException ex) {
-            assertThat(ex.getStatusMessage(), equalTo("Forbidden"));
+            FailingHttpStatusCodeException ex2 =
+                    assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("label-implications/configure"));
+            assertThat(ex2.getStatusMessage(), equalTo("Forbidden"));
         }
     }
 
     @Test
-    public void detectRedundant() throws IOException {
+    void detectRedundant() throws IOException {
         j.jenkins.setLabelString("rhel65");
-        assertThat(config.detectRedundantLabels(j.jenkins), this.sameMembers());
+        assertThat(config.detectRedundantLabels(j.jenkins), sameMembers());
 
         j.jenkins.setLabelString("rhel65 linux");
-        assertThat(config.detectRedundantLabels(j.jenkins), this.sameMembers(label("linux")));
+        assertThat(config.detectRedundantLabels(j.jenkins), sameMembers(label("linux")));
 
         j.jenkins.setLabelString("rhel65 linux");
-        assertThat(config.detectRedundantLabels(j.jenkins), this.sameMembers(label("linux")));
+        assertThat(config.detectRedundantLabels(j.jenkins), sameMembers(label("linux")));
     }
 
-    private <T> TypeSafeMatcher<Collection<T>> sameMembers(Collection<T> items) {
+    private static <T> TypeSafeMatcher<Collection<T>> sameMembers(Collection<T> items) {
         return new SameMembers<>(items);
     }
 
-    private <T> TypeSafeMatcher<Collection<T>> sameMembers(T... items) {
+    @SafeVarargs
+    private static <T> TypeSafeMatcher<Collection<T>> sameMembers(T... items) {
         return new SameMembers<>(Arrays.asList(items));
     }
 
@@ -238,7 +237,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void cacheImpliedLabels() throws Exception {
+    void cacheImpliedLabels() throws Exception {
         TrackingImplication tracker = new TrackingImplication();
         ArrayList<Implication> impls = new ArrayList<>(implications);
         impls.add(tracker);
@@ -269,22 +268,22 @@ public class ConfigTest {
     }
 
     @Test
-    public void testManagementCategory() {
+    void testManagementCategory() {
         assertThat(config.getCategory(), is(ManagementLink.Category.CONFIGURATION));
     }
 
     @Test
-    public void testDescription() {
+    void testDescription() {
         assertThat(config.getDescription(), is("Infer redundant labels automatically based on user declaration"));
     }
 
     @Test
-    public void testIconFileName() {
+    void testIconFileName() {
         assertThat(config.getIconFileName(), is("symbol-pricetags-outline plugin-ionicons-api"));
     }
 
     @Test
-    public void testAutoCompleteLabels() {
+    void testAutoCompleteLabels() {
         /* Prefix substring of controller label should autocomplete to full controller label */
         String controllerLabelPrefix = controllerLabel.substring(0, 4);
         AutoCompletionCandidates candidates = config.doAutoCompleteLabels(controllerLabelPrefix);
@@ -292,7 +291,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testAutoCompleteLabels_Invalid() {
+    void testAutoCompleteLabels_Invalid() {
         /* Invalid prefix should not autocomplete */
         String invalidPrefix = "invalid-prefix-for-auto-complete";
         AutoCompletionCandidates candidates = config.doAutoCompleteLabels(invalidPrefix);
@@ -300,7 +299,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testAutoCompleteLabels_Implication() {
+    void testAutoCompleteLabels_Implication() {
         /* Implication should autocomplete */
         String impliedLabelPrefix = "fed";
         AutoCompletionCandidates candidates = config.doAutoCompleteLabels(impliedLabelPrefix);
@@ -324,7 +323,7 @@ public class ConfigTest {
                     ae.addSuppressed(where);
                     throw ae;
                 }
-                assertEquals(null, log.put(atoms, new Exception()));
+                assertNull(log.put(atoms, new Exception()));
             }
             return Collections.emptyList();
         }
