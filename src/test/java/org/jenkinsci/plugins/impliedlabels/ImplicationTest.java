@@ -31,17 +31,15 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import jenkins.model.Jenkins;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class ImplicationTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class ImplicationTest {
 
     @Test
-    public void valid() throws IOException {
+    void valid(JenkinsRule j) throws IOException {
         Jenkins.get().setLabelString("a");
         Implication i = new Implication("a||b", "c d");
 
@@ -52,7 +50,7 @@ public class ImplicationTest {
     }
 
     @Test
-    public void invalid() {
+    void invalid(JenkinsRule j) {
         Implication i = new Implication("||", "c d");
 
         Set<LabelAtom> empty = Collections.emptySet();
