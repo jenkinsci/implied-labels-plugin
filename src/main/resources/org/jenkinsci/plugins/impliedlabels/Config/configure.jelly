@@ -43,7 +43,7 @@ THE SOFTWARE.
               <f:entry>
                 <label>${%Labels}<f:textbox value="${impl.atomsString()}" field="atoms" style="width: 30%" autoCompleteDelimChar=" " autoCompleteUrl="${rootURL}/label-implications/autoCompleteLabels"/></label>
                 <st:nbsp/>
-                <labels>${%Expression}<f:textbox value="${impl.expressionString()}" field="expression" style="width: 50%" checkUrl="'${rootURL}/label-implications/checkExpression?expression='+encodeURIComponent(this.value)" autoCompleteUrl="${rootURL}/label-implications/autoCompleteLabels" autoCompleteDelimChar=" "/></labels>
+                <labels>${%Expression}<f:textbox value="${impl.expressionString()}" field="expression" checkUrl="${rootURL}/label-implications/checkExpression" checkDependsOn="expression" autoCompleteUrl="${rootURL}/label-implications/autoCompleteLabels" autoCompleteDelimChar=" "/></labels>
                 <st:nbsp/>
                 <f:repeatableDeleteButton />
               </f:entry>
