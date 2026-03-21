@@ -2,7 +2,7 @@
 
 Infer dynamic node labels using configured implications.
 
-Lets have a node with `linux`, `RHEL`, `RHEL8` and `RHEL8_5` labels.
+Consider a node with `linux`, `RHEL`, `RHEL8` and `RHEL8_5` labels.
 Most of this information is redundant and can be inferred from the `RHEL8_5`
 label. Here is an excerpt of the Implied Labels Plugin configuration to do
 just that.
@@ -10,7 +10,7 @@ just that.
 ![](docs/images/implied-labels.png)
 
 This plugin gathers the implication rules to one place (*Manage Jenkins
-\> Label implications*), so explicit node labels can be defined in more
+\> Label implications*), so explicit node labels can be defined in a more
 concise form (without redundancy). Implications are readable for every
 user with `Jenkins.READ`, but only `Jenkins.ADMINISTER` is authorized to
 configure. The plugin also detects explicitly configured node labels that
